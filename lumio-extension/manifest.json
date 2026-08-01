@@ -1,1 +1,16 @@
-
+{
+    "manifest_version": 3,
+    "name": "Lumio",
+    "description": "An AI usage companion that tracks your AI reliance and helps you verify claims with Compass",
+    "icons": {
+        "16": "assets/icons/icon16.png",
+        "48": "assets/icons/icon48.png",
+        "128": "assets/icons/icon128.png"
+    },
+    "background": {
+        "service_worker": "background/background.js"
+    },
+    "action": {
+        "default_popup": "popup/popup.html"
+    }
+}
