@@ -1,3 +1,4 @@
+//TESTING ONLYYY PARA MAKITA YUNG MOOD NG COMPANIONS
 import { setData } from "./shared/storage.js";
 import { getCompanionMood } from "./shared/companionState.js";
 
