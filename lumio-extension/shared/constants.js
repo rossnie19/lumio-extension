@@ -9,7 +9,7 @@ export const AI_DOMAINS = [
 //computation of how many minutes will determine the mood of the companion
 export const SESSION_CONFIG = {
     gapThresholdMinutes: 5, //gap before a session is considered "ended"
-    concernedSessionMinutes: 30, //continuous active time before mood = concerned
+    concernedSessionMinutes: 45, //continuous active time before mood = concerned
     restingMinutes: 30 //no activity at all before mood = resting
 }
 
