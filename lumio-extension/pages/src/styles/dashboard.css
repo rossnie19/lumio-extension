@@ -283,6 +283,12 @@ h1, h2, h3, .section-title, .selector-title {
   align-items: center;
 }
 
+/* --- CHARACTER PNG DROP SHADOWS --- */
+.companion-card img,
+.character-avatar-container img {
+  filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.25)); 
+}
+
 /* --- PIXEL BUTTONS (HOVER & CLICK ANIMATIONS) --- */
 .pixel-btn {
   font-family: 'Press Start 2P', cursive;
@@ -431,8 +437,9 @@ h1, h2, h3, .section-title, .selector-title {
 /* --- COMPASS LOGO --- */
 .compass-logo-container {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 24px;
+  margin-left: 8px; 
 }
 
 .compass-logo {
@@ -454,6 +461,14 @@ h1, h2, h3, .section-title, .selector-title {
   flex-direction: column;
   align-items: center;
   width: 30%;
+  /* NEW: Added transition and cursor for the float effect */
+  transition: transform 0.2s ease;
+  cursor: default; 
+}
+
+/* NEW: The upward float on hover */
+.compass-col:hover {
+  transform: translateY(-6px);
 }
 
 .compass-number {
