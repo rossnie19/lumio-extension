@@ -1,0 +1,475 @@
+/* --- GLOBAL COMPONENT HEADERS --- */
+.section-title {
+  font-size: 1.2rem !important;
+  margin: 0 0 20px 0 !important;
+  text-align: left !important;
+}
+
+body {
+  margin: 0;
+  background-color: #EAE6DB; 
+  font-family: 'VT323', monospace; 
+  color: #3E2723;
+  padding: 24px;
+  box-sizing: border-box;
+  height: 100vh; /* Locks height to viewport */
+  overflow: hidden; /* Removes scrolling on full screen */
+}
+
+h1, h2, h3, .section-title, .selector-title {
+  font-family: 'Press Start 2P', cursive;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.15); /* Soft drop shadow */
+}
+
+.dashboard-container {
+  max-width: 1400px; /* Widened to fit 3 columns comfortably */
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- DASHBOARD LOGO --- */
+.dashboard-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-logo {
+  max-width: 500px; /* Adjust this number if your logo is too big/small */
+  height: auto;
+  image-rendering: pixelated; /* Keeps the pixel art crisp! */
+  filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.15)); /* Adds the retro shadow behind the PNG */
+}
+
+/* 3-COLUMN LAYOUT */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr; /* 3 Columns (Companion is slightly wider) */
+  gap: 32px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* --- MONTHLY OVERVIEW (STATS UI) --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-block {
+  border: 4px solid #333;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.stat-block:hover {
+  transform: translateY(-6px);
+  box-shadow: 6px 10px 0px rgba(0, 0, 0, 0.2);
+}
+
+.stat-block h3 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  margin: 0 0 12px 0;
+}
+
+.stat-block .stat-value {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.8rem;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+.bg-green { background-color: #2D4A3E; color: white; }
+.bg-orange { background-color: #D98C4A; color: white; }
+.bg-purple { background-color: #6D5A88; color: white; }
+.bg-red { background-color: #B55043; color: white; }
+
+
+/* --- MOST USED PLATFORM --- */
+.platform-card {
+  background-color: #D6C5AD; /* Now matches the dialogue box! */
+  border: 4px solid #8B7355;
+  padding: 24px;
+  /* Pulls the card upward, closer to the Monthly Overview */
+  margin-top: -16px; 
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15); /* Added shadow for depth */
+}
+
+.platform-card .section-title {
+  color: #6D5A88;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.platform-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 48px;
+  padding-left: 16px;
+}
+
+.pixel-pie-chart {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid #333;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+}
+
+.platform-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Hover & Tooltips for Legend */
+.platform-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.2rem;
+  position: relative;
+  cursor: help;
+  transition: transform 0.1s ease;
+}
+
+.platform-rank-item:hover {
+  transform: translateX(4px);
+}
+
+.platform-rank-item::after {
+  content: attr(data-percentage);
+  position: absolute;
+  left: 110%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #3A2B20;
+  color: #FFFFFF;
+  padding: 6px 10px;
+  border: 2px solid #000;
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  box-shadow: 2px 2px 0px #000;
+  z-index: 10;
+}
+
+.platform-rank-item:hover::after {
+  opacity: 1;
+}
+
+.rank-number {
+  font-size: 1.6rem;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+}
+
+.platform-name {
+  color: #333;
+}
+
+
+/* --- COMPANION UI (RIGHT COLUMN) --- */
+.companion-card {
+  background-color: #6D5A88;
+  border: 4px solid #2B213A;
+  color: #FFFFFF;
+  padding: 20px;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.15);
+  image-rendering: pixelated;
+}
+
+.companion-title {
+  border-bottom: 2px dashed #A991D4;
+  padding-bottom: 8px;
+  margin-bottom: 12px !important;
+}
+
+.mood-badge {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.7rem;
+  color: #A991D4;
+  margin-bottom: 16px;
+}
+
+.companion-avatar-large {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -20px;
+}
+
+.dialogue-box {
+  background-color: #D6C5AD;
+  border: 4px solid #8B7355;
+  padding: 16px;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+
+/* --- CHARACTER SELECTOR --- */
+.character-selector-card {
+  background-color: #5A4534;
+  border: 4px solid #3A2B20;
+  padding: 16px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  image-rendering: pixelated;
+  margin-top: 16px;
+}
+
+.character-avatar-container {
+  width: 90px;
+  height: 90px;
+  background-color: #3A2B20;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.character-selector-controls {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.selector-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.selector-title {
+  color: #D98C4A;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.6rem;
+  margin-bottom: 6px;
+}
+
+.selector-name {
+  color: #FFFFFF;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+}
+
+.selector-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* --- PIXEL BUTTONS (HOVER & CLICK ANIMATIONS) --- */
+.pixel-btn {
+  font-family: 'Press Start 2P', cursive;
+  border: 4px solid #000;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0px #000;
+  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.pixel-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px #000;
+}
+
+.arrow-btn {
+  background-color: #FFFFFF;
+  color: #000;
+  padding: 8px 12px;
+  font-size: 1rem;
+}
+
+.arrow-btn:hover {
+  background-color: #D1D1D1;
+}
+
+.select-btn {
+  background-color: #F1BC4F;
+  color: #FFFFFF;
+  padding: 10px 16px;
+  font-size: 0.7rem;
+  text-shadow: 2px 2px 0px #000;
+  margin-left: auto;
+}
+
+.select-btn:hover {
+  background-color: #D4A23A;
+}
+
+/* --- WEEKLY OVERVIEW --- */
+.weekly-container {
+  background-color: #5A4534; /* Dark brown card background */
+  border: 4px solid #3A2B20;
+  padding: 24px; /* Matches the padding of the pie chart card */
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Force the Weekly header to be dark brown */
+.weekly-container .section-title {
+  color: #D98C4A !important; 
+}
+
+.weekly-row {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px; /* Slightly increased gap for breathing room */
+  position: relative;
+  cursor: help;
+  transition: transform 0.1s ease;
+}
+
+.weekly-row:hover {
+  transform: translateX(4px); 
+}
+
+/* The Hover Tooltip */
+.weekly-row::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 100%; 
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #3A2B20;
+  color: #FFFFFF;
+  padding: 6px 10px;
+  border: 2px solid #000;
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  box-shadow: 2px 2px 0px #000;
+  z-index: 10;
+  margin-left: 16px; 
+}
+
+.weekly-row:hover::after {
+  opacity: 1;
+}
+
+.day-label {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem; /* Increased font size */
+  color: #FFFFFF; /* White text so it can be read on brown */
+  width: 140px; /* Slightly wider */
+  text-align: right;
+  margin-right: 16px; 
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.5); /* Darker shadow */
+}
+
+.coin-slots {
+  display: flex;
+  gap: 8px; /* Restored gap */
+}
+
+/* Enlarged Coin Shape */
+.pixel-coin {
+  width: 22px; /* Increased from 18px */
+  height: 22px; /* Increased from 18px */
+  border: 3px solid #3A2B20; 
+  border-radius: 4px; 
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+/* Filled Gold Coin */
+.coin-gold {
+  background-color: #F1BC4F;
+  box-shadow: inset -3px -3px 0px rgba(212, 162, 58, 1), 2px 2px 0px rgba(0,0,0,0.2); 
+}
+
+/* Empty White Slot */
+.coin-empty {
+  background-color: #FFFFFF;
+}
+
+/* --- RESPONSIVE MOBILE/TABLET LAYOUT --- */
+@media (max-width: 1100px) {
+  body {
+    height: auto; /* Removes the height lock */
+    overflow-y: auto; /* Brings the scrollbar back */
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* Stacks everything into a single column */
+    gap: 40px;
+  }
+}
+
+/* --- COMPASS STATS ROW --- */
+.compass-stats-container {
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* --- COMPASS LOGO --- */
+.compass-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.compass-logo {
+  max-width: 250px; /* Adjust based on how wide your exported PNG is */
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.15));
+}
+
+/* 3-Column Stats Row */
+.compass-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+}
+
+.compass-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30%;
+}
+
+.compass-number {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 2.5rem;
+  color: #2D4A3E; /* Dark Green */
+  margin-bottom: 16px;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.15);
+}
+
+.compass-label {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.6rem;
+  color: #333;
+  line-height: 1.6;
+  text-align: center;
+  -webkit-text-stroke: 0px; /* Make sure small text is readable */
+}
