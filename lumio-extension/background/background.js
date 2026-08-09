@@ -39,7 +39,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///for Background service worker: tab tracking, domain detection, calling Rossnie's storage wrapper (fidel)//
+///for Background service worker: tab tracking, domain detection, calling Rossnie's storage wrapper//
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { AI_DOMAINS } from "../shared/constants.js";
