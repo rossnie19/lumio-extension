@@ -1,4 +1,4 @@
-import { getCompanionMood } from "../shared/companionState.js";
+import { getCompanionMood } from "../public/shared/companionState.js";
 
 async function updatePopup() {
   const mood = await getCompanionMood();

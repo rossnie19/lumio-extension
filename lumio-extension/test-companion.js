@@ -1,5 +1,5 @@
-import { setData } from "./shared/storage.js";
-import { getCompanionMood } from "./shared/companionState.js";
+import { setData } from "./public/shared/storage.js";
+import { getCompanionMood } from "./public/shared/companionState.js";
 
 async function runTest() {
   const now = Date.now();

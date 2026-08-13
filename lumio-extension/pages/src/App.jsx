@@ -7,7 +7,7 @@ import MonthlyOverview from './components/MonthlyOverview';
 import WeeklyOverview from './components/WeeklyOverview';
 import CompassStats from './components/CompassStats';
 import { mockData } from './mockData';
-import { getCompanionMood } from '../../shared/companionState.js';
+import { getCompanionMood } from '../../public/shared/companionState.js';
 import './styles/dashboard.css';
 
 export default function App() {

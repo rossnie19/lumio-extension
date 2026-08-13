@@ -25,7 +25,8 @@
         "storage",
         "contextMenus",
         "scripting",
-        "alarms"
+        "alarms",
+        "activeTab"
     ],
     "host_permissions": [
         "https://chatgpt.com/*",
@@ -42,5 +43,11 @@
                 "content-scripts/compass.js"
             ]
         }
+    ],
+    "web_accessible_resources": [
+    {
+        "resources": [ "assets/*" ],
+        "matches": [ "<all_urls>" ]
+    }
     ]
 }
