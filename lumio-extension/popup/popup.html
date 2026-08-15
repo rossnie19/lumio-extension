@@ -1,19 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lumio</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="companion-glance">
-    <img id="mood-icon" src="../assets/icons/icon128.png" alt="Companion mood">
-    <p id="mood-text">Loading...</p>
+  <div class="popup-container">
+    
+    <!-- Left Column: Stats & Info -->
+    <div class="left-col">
+      <h1 class="pet-name" id="pet-name">[PET NAME]</h1>
+      <h2 class="pet-mood" id="pet-mood">Curious</h2>
+
+      <div class="activity-section">
+        <p class="section-title">TODAY'S ACTIVITY:</p>
+        <p>AI Sessions: <span id="stat-sessions">1</span></p>
+        <p>Time with AI: <span id="stat-time">0h 18m</span></p>
+        <p>Claims Verified: <span id="stat-claims">1</span></p>
+      </div>
+    </div>
+
+    <!-- Right Column: Character & Button -->
+    <div class="right-col">
+      <!-- Fallback image, will be replaced by JS -->
+      <img id="companion-sprite" src="../public/assets/horse.png" alt="Companion" />
+      <button id="open-dashboard" class="dashboard-link">Dashboard ▶</button>
+    </div>
+
   </div>
-  <div class="nav-buttons">
-    <button id="open-dashboard">Open Dashboard</button>
-  </div>
+  
   <script type="module" src="popup.js"></script>
-  <script type="module" src="../test-companion.js"></script>
 </body>
 </html>

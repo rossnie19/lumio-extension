@@ -14,6 +14,7 @@ export default function App() {
   const [mood, setMood] = useState(mockData.currentMood);
   const [petName, setPetName] = useState("PET NAME");
   const [age, setAge] = useState(1);
+  const [verifiedCount, setVerifiedCount] = useState(mockData.verifiedClaimsCount);
   
   const [activeCharacter, setActiveCharacter] = useState({ 
     id: 'mangkukulam', 
@@ -29,10 +30,12 @@ export default function App() {
 
         // Load Age, Name, AND Active Character from Chrome Storage
         if (typeof chrome !== 'undefined' && chrome.storage) {
-          const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter']);
+          const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'verifiedClaimsCount']);
           
           if (data.petName) setPetName(data.petName);
           if (data.activeCharacter) setActiveCharacter(data.activeCharacter);
+
+          if (data.verifiedClaimsCount !== undefined) setVerifiedCount(data.verifiedClaimsCount);
 
           if (data.installDate) {
             const msPerDay = 1000 * 60 * 60 * 24;
@@ -48,6 +51,24 @@ export default function App() {
       }
     }
     loadDashboardData();
+
+    const handleStorageChange = (changes, namespace) => {
+      if (namespace === 'local' && changes.verifiedClaimsCount) {
+        // Instantly update the dashboard number without refreshing!
+        setVerifiedCount(changes.verifiedClaimsCount.newValue); 
+      }
+    };
+
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+    }
+
+    // Cleanup listener when the dashboard is closed
+    return () => {
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        chrome.storage.onChanged.removeListener(handleStorageChange);
+      }
+    };
   }, []);
 
   const handleCharacterSelect = (character) => {
@@ -77,7 +98,12 @@ export default function App() {
         <div className="column">
           <WeeklyOverview weeklyData={mockData.weeklyActivity} />
 
-          <CompassStats stats={mockData.compassStats} />
+          <CompassStats 
+            stats={{
+              ...mockData.compassStats, 
+              today: verifiedCount // Overrides the mock 'today' stat with your live count!
+            }} 
+          />
         </div>
 
         {/* COLUMN 2: Monthly Overview & Most Used Platform */}
@@ -85,7 +111,7 @@ export default function App() {
           <MonthlyOverview 
             totalTime={mockData.totalTimeMinutes} 
             sessions={mockData.sessionsToday} 
-            verifiedCount={mockData.verifiedClaimsCount}
+            verifiedCount={14 + verifiedCount} /* Adds a realistic monthly baseline! */
             streak={6}
           />
           <UsageChart 

@@ -11,10 +11,13 @@ chrome.runtime.onInstalled.addListener(() => {
     });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === "verify-compass" && info.selectionText) {
         const selectedText = info.selectionText.trim();
         const sourceLinks = generateValidSources(selectedText);
+
+        const currentCount = await getData("verifiedClaimsCount") || 0;
+        await setData("verifiedClaimsCount", currentCount + 1);
 
         console.log("Compass Captured Data:", { claim: selectedText, sources: sourceLinks });
 

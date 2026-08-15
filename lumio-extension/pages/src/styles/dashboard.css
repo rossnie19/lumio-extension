@@ -488,3 +488,22 @@ h1, h2, h3, .section-title, .selector-title {
   text-align: center;
   -webkit-text-stroke: 0px; /* Make sure small text is readable */
 }
+
+/* --- Retro Input Field Styles --- */
+.pet-name-input {
+  font-family: 'Press Start 2P', cursive; /* Matches your chunky retro font */
+  font-size: 14px; /* Adjust if it looks too big/small */
+  background-color: rgba(255, 255, 255, 0.2); /* Slightly transparent background */
+  color: #31263E; /* Matches the dark purple text in your screenshot */
+  border: 2px dashed #31263E; /* Retro dashed border */
+  padding: 8px;
+  outline: none; /* KILLS THE DEFAULT BLUE GLOW */
+  width: 80%; /* Adjust to fit the box */
+  text-transform: uppercase; /* Keeps the name in all caps */
+}
+
+/* When the user clicks on it to type */
+.pet-name-input:focus {
+  border: 2px solid #31263E; /* Turns into a solid line when typing */
+  background-color: rgba(255, 255, 255, 0.4); /* Gets a bit brighter */
+}
