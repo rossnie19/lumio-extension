@@ -6,15 +6,16 @@ import CharacterSelector from './components/CharacterSelector';
 import MonthlyOverview from './components/MonthlyOverview';
 import WeeklyOverview from './components/WeeklyOverview';
 import CompassStats from './components/CompassStats';
-import { mockData } from './mockData';
+import { mockData, mockDataSets } from './mockData';
 import { getCompanionMood } from '../../public/shared/companionState.js';
 import './styles/dashboard.css';
 
 export default function App() {
-  const [mood, setMood] = useState(mockData.currentMood);
+  // Start with a capitalized mood so it perfectly matches our dictionary!
+  const [mood, setMood] = useState("Curious"); 
   const [petName, setPetName] = useState("PET NAME");
   const [age, setAge] = useState(1);
-  const [verifiedCount, setVerifiedCount] = useState(mockData.verifiedClaimsCount);
+  const [verifiedCount, setVerifiedCount] = useState(mockDataSets["Curious"].compassStats.today);
   
   const [activeCharacter, setActiveCharacter] = useState({ 
     id: 'mangkukulam', 
@@ -30,7 +31,8 @@ export default function App() {
 
         // Load Age, Name, AND Active Character from Chrome Storage
         if (typeof chrome !== 'undefined' && chrome.storage) {
-          const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'verifiedClaimsCount']);
+          const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'verifiedClaimsCount', 'demoMood']);
+          if (data.demoMood) setMood(data.demoMood);
           
           if (data.petName) setPetName(data.petName);
           if (data.activeCharacter) setActiveCharacter(data.activeCharacter);
@@ -86,6 +88,25 @@ export default function App() {
     }
   };
 
+  const handleMoodOverride = (e) => {
+    const newMood = e.target.value;
+    setMood(newMood); 
+
+    const currentData = mockDataSets[newMood];
+    setVerifiedCount(currentData.compassStats.today);
+
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.set({ 
+        demoMood: newMood,
+        verifiedClaimsCount: currentData.compassStats.today,
+        totalTimeMinutes: currentData.totalTimeMinutes, // <-- NEW
+        sessionsToday: currentData.sessionsToday        // <-- NEW
+      }); 
+    }
+  };
+
+  const currentData = mockDataSets[mood] || mockDataSets["Curious"];
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-logo-container">
@@ -94,37 +115,60 @@ export default function App() {
       
       <div className="dashboard-grid">
         
-        {/* COLUMN 1: Weekly Overview */}
+        {/* COLUMN 1 */}
         <div className="column">
-          <WeeklyOverview weeklyData={mockData.weeklyActivity} />
+          <WeeklyOverview weeklyData={currentData.weeklyActivity} />
 
           <CompassStats 
             stats={{
-              ...mockData.compassStats, 
-              today: verifiedCount // Overrides the mock 'today' stat with your live count!
+              ...currentData.compassStats, 
+              today: verifiedCount // Keep this as verifiedCount so live clicks still work!
             }} 
           />
         </div>
 
-        {/* COLUMN 2: Monthly Overview & Most Used Platform */}
+        {/* COLUMN 2 */}
         <div className="column">
           <MonthlyOverview 
-            totalTime={mockData.totalTimeMinutes} 
-            sessions={mockData.sessionsToday} 
-            verifiedCount={14 + verifiedCount} /* Adds a realistic monthly baseline! */
+            totalTime={currentData.totalTimeMinutes} 
+            sessions={currentData.sessionsToday} 
+            verifiedCount={34 + verifiedCount} 
             streak={6}
           />
           <UsageChart 
-            domainBreakdown={mockData.domainBreakdown} 
-            totalTime={mockData.totalTimeMinutes} 
+            domainBreakdown={currentData.domainBreakdown} 
+            totalTime={currentData.totalTimeMinutes} 
           />
         </div>
 
         {/* COLUMN 3: The Companion & Selector */}
         <div className="column">
-          <h2 className="section-title" style={{ textAlign: 'left', color: '#6D5A88', marginBottom: '16px', marginTop: '0' }}>
-            COMPANION
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className="section-title" style={{ margin: '0', color: '#6D5A88', textAlign: 'left' }}>
+              COMPANION
+            </h2>
+            
+            {/* The Demo Override Dropdown */}
+            <select 
+              value={mood} 
+              onChange={handleMoodOverride}
+              style={{ 
+                fontFamily: '"Press Start 2P", cursive', 
+                fontSize: '10px', 
+                padding: '4px', 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                border: '2px dashed #6D5A88', 
+                color: '#6D5A88', 
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="Curious">Curious</option>
+              <option value="Focused">Focused</option>
+              <option value="Idle">Idle</option>
+              <option value="Concerned">Concerned</option>
+            </select>
+          </div>
           
           <Companion 
             mood={mood} 

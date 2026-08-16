@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const MOOD_META = {
   focused: { label: 'FOCUSED', text: 'You’ve been researching safely. Great job comparing sources!' },
-  resting: { label: 'RESTING', text: 'Zzz... No recent AI activity.' },
+  idle: { label: 'IDLE', text: 'Zzz... No recent AI activity.' }, // Changed 'resting' to 'idle'
   concerned: { label: 'CONCERNED', text: 'You are relying heavily on AI right now. Use Compass to check those claims!' },
   curious: { label: 'CURIOUS', text: 'Stay curious! Remember to verify tricky answers.' }
 };
@@ -15,7 +15,10 @@ export default function Companion({
   age,
   onNameChange
 }) {
-  const meta = MOOD_META[mood] || MOOD_META.curious;
+  // Forces the incoming mood string to be lowercase so it perfectly matches the MOOD_META keys above!
+  const normalizedMood = mood.toLowerCase();
+  const meta = MOOD_META[normalizedMood] || MOOD_META.curious;
+  
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(petName);
 
