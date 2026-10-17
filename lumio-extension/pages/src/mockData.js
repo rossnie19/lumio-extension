@@ -29,7 +29,7 @@ export const mockData = {
 
 // The dynamic dataset for the Director's Dropdown
 export const mockDataSets = {
-  Curious: {
+  curious: {
     // High verification spread out across the week (adds up to 45)
     weeklyActivity: [ 
       { day: 'MONDAY', score: 3 },
@@ -49,7 +49,7 @@ export const mockDataSets = {
       { domain: 'gemini.google.com', timeMinutes: 8, visits: 1 }
     ]
   },
-  Focused: {
+  focused: {
     // Slightly lower verification, but higher productivity (adds up to 33)
     weeklyActivity: [ 
       { day: 'MONDAY', score: 4 },
@@ -69,7 +69,7 @@ export const mockDataSets = {
       { domain: 'scholar.google.com', timeMinutes: 35, visits: 2 } // Academic focus
     ]
   },
-  Concerned: {
+  concerned: {
     // High AI use, but very low verification (adds up to 30)
     weeklyActivity: [ 
       { day: 'MONDAY', score: 8 },
@@ -88,7 +88,7 @@ export const mockDataSets = {
       { domain: 'claude.ai', timeMinutes: 50, visits: 2 }
     ]
   },
-  Idle: {
+  idle: {
     // Almost completely flatline charts (adds up to 2)
     weeklyActivity: [ 
       { day: 'MONDAY', score: 0 },

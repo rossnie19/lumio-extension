@@ -1,7 +1,18 @@
 import { SESSION_CONFIG } from "./constants.js";
 import { getData } from "./storage.js";
 
-// Determine current companion mood: curious, focused, concerned, or resting
+// the only valid mood values (always lowercase)
+export const MOODS = ["curious", "focused", "concerned", "idle"];
+
+// turn any stored/legacy mood value ("Idle", "resting", "CURIOUS"...) into one of MOODS
+export function normalizeMood(mood) {
+  if (typeof mood !== "string") return "curious";
+  const lower = mood.toLowerCase();
+  if (lower === "resting") return "idle"; // old name for idle
+  return MOODS.includes(lower) ? lower : "curious";
+}
+
+// Determine current companion mood: curious, focused, concerned, or idle
 export async function getCompanionMood() {
   const lastCompassUse = await getData("lastCompassUse");
   const lastActivity = await getData("lastActivityTime");
@@ -13,9 +24,9 @@ export async function getCompanionMood() {
     return "focused";
   }
 
-  // resting: no activity within the resting threshold
+  // idle: no activity within the resting threshold
   if (!lastActivity || now - lastActivity > SESSION_CONFIG.restingMinutes * 60 * 1000) {
-    return "resting";
+    return "idle";
   }
 
   // concerned: current session's active time exceeds the threshold

@@ -6,7 +6,7 @@ async function runTest() {
 
   // Scenario: test each mood one at a time by changing which block is active
 
-  // 1. RESTING test — no activity at all
+  // 1. IDLE test — no activity at all
   // await setData("lastActivityTime", null);
   // await setData("currentSession", null);
   // await setData("lastCompassUse", null);

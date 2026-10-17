@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const MOOD_META = {
   focused: { label: 'FOCUSED', text: 'You’ve been researching safely. Great job comparing sources!' },
-  idle: { label: 'IDLE', text: 'Zzz... No recent AI activity.' }, // Changed 'resting' to 'idle'
+  idle: { label: 'IDLE', text: 'Zzz... No recent AI activity.' },
   concerned: { label: 'CONCERNED', text: 'You are relying heavily on AI right now. Use Compass to check those claims!' },
   curious: { label: 'CURIOUS', text: 'Stay curious! Remember to verify tricky answers.' }
 };

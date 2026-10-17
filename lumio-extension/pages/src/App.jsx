@@ -7,15 +7,15 @@ import MonthlyOverview from './components/MonthlyOverview';
 import WeeklyOverview from './components/WeeklyOverview';
 import CompassStats from './components/CompassStats';
 import { mockData, mockDataSets } from './mockData';
-import { getCompanionMood } from '../../public/shared/companionState.js';
+import { getCompanionMood, normalizeMood } from '../../public/shared/companionState.js';
 import './styles/dashboard.css';
 
 export default function App() {
-  // Start with a capitalized mood so it perfectly matches our dictionary!
-  const [mood, setMood] = useState("Curious"); 
+  // Moods are always lowercase (see MOODS in companionState.js)
+  const [mood, setMood] = useState("curious");
   const [petName, setPetName] = useState("PET NAME");
   const [age, setAge] = useState(1);
-  const [verifiedCount, setVerifiedCount] = useState(mockDataSets["Curious"].compassStats.today);
+  const [verifiedCount, setVerifiedCount] = useState(mockDataSets.curious.compassStats.today);
   
   const [activeCharacter, setActiveCharacter] = useState({ 
     id: 'mangkukulam', 
@@ -27,12 +27,12 @@ export default function App() {
     async function loadDashboardData() {
       try {
         const currentMood = await getCompanionMood();
-        if (currentMood) setMood(currentMood);
+        if (currentMood) setMood(normalizeMood(currentMood));
 
         // Load Age, Name, AND Active Character from Chrome Storage
         if (typeof chrome !== 'undefined' && chrome.storage) {
           const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'verifiedClaimsCount', 'demoMood']);
-          if (data.demoMood) setMood(data.demoMood);
+          if (data.demoMood) setMood(normalizeMood(data.demoMood));
           
           if (data.petName) setPetName(data.petName);
           if (data.activeCharacter) setActiveCharacter(data.activeCharacter);
@@ -105,7 +105,7 @@ export default function App() {
     }
   };
 
-  const currentData = mockDataSets[mood] || mockDataSets["Curious"];
+  const currentData = mockDataSets[mood] || mockDataSets.curious;
 
   return (
     <div className="dashboard-container">
@@ -163,10 +163,10 @@ export default function App() {
                 outline: 'none'
               }}
             >
-              <option value="Curious">Curious</option>
-              <option value="Focused">Focused</option>
-              <option value="Idle">Idle</option>
-              <option value="Concerned">Concerned</option>
+              <option value="curious">Curious</option>
+              <option value="focused">Focused</option>
+              <option value="idle">Idle</option>
+              <option value="concerned">Concerned</option>
             </select>
           </div>
           

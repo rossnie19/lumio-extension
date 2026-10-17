@@ -1,5 +1,5 @@
 import { getData } from "../public/shared/storage.js";
-import { getCompanionMood } from "../public/shared/companionState.js";
+import { getCompanionMood, normalizeMood } from "../public/shared/companionState.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Open Dashboard Button Logic
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const savedPetName = await getData("petName") || "[PET NAME]"; 
         // Check if there is a forced demo mood, otherwise fall back to the default
         const savedDemoMood = await getData("demoMood");
-        const currentMood = savedDemoMood || await getCompanionMood(); 
+        const currentMood = normalizeMood(savedDemoMood || await getCompanionMood());
         const currentClaimsCount = await getData("verifiedClaimsCount") || 0;
         const statClaimsEl = document.getElementById("stat-claims");
         if (statClaimsEl) {
@@ -42,7 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // 3. Inject dynamic text into the UI
-        document.getElementById("pet-mood").textContent = currentMood;
+        // capitalize for display: "curious" -> "Curious"
+        document.getElementById("pet-mood").textContent = currentMood.charAt(0).toUpperCase() + currentMood.slice(1);
         document.getElementById("pet-name").textContent = savedPetName;
         
         // 4. Inject dynamic image
