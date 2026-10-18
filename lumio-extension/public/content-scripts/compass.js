@@ -1,3 +1,13 @@
+// Escape text before putting it into innerHTML (the claim comes from page content)
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Function to create and inject the Compass retro sidebar
 function injectCompassSidebar(claimText, links = []) {
   // 1. Remove existing sidebar if one is already open
@@ -37,18 +47,15 @@ function injectCompassSidebar(claimText, links = []) {
     }
   ];
 
-// 5. Build HTML for reference cards with property fallbacks
-  const cardsHTML = displayLinks.map(link => {
-    const titleText = typeof link === 'string' ? link : (link.title || link.name || link.label || link.text || 'Reference Link');
-    const sourceText = typeof link === 'string' ? '' : (link.source || link.domain || link.site || link.publisher || link.url || '');
-
-    return `
-      <a href="${link.url || link.link || '#'}" target="_blank" class="compass-card">
-        <div class="card-title">${titleText}</div>
-        ${sourceText ? `<div class="card-source">${sourceText}</div>` : ''}
+  // 5. Build HTML for reference cards (links are { title, source, url } from generateValidSources)
+  const cardsHTML = displayLinks.map(link => `
+      <a href="${escapeHtml(link.url || '#')}" target="_blank" rel="noopener noreferrer" class="compass-card">
+        <div class="card-title">${escapeHtml(link.title || 'Reference Link')}</div>
+        ${link.source ? `<div class="card-source">${escapeHtml(link.source)}</div>` : ''}
       </a>
-    `;
-  }).join("");
+    `).join("");
+
+  const shortClaim = claimText.length > 90 ? claimText.substring(0, 90) + '...' : claimText;
 
   // 6. Inject HTML & CSS into Shadow Root
   shadow.innerHTML = `
@@ -190,7 +197,7 @@ function injectCompassSidebar(claimText, links = []) {
       <div class="subtitle">Verify claims with references</div>
 
       <div class="claim-preview">
-        <strong>Claim:</strong> "${claimText.length > 90 ? claimText.substring(0, 90) + '...' : claimText}"
+        <strong>Claim:</strong> "${escapeHtml(shortClaim)}"
       </div>
 
       <div class="cards-list">

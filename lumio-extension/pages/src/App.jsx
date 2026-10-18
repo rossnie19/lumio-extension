@@ -8,6 +8,7 @@ import WeeklyOverview from './components/WeeklyOverview';
 import CompassStats from './components/CompassStats';
 import { mockData, mockDataSets } from './mockData';
 import { getCompanionMood, normalizeMood } from '../../public/shared/companionState.js';
+import { todayKey } from '../../public/shared/storage.js';
 import './styles/dashboard.css';
 
 export default function App() {
@@ -100,8 +101,9 @@ export default function App() {
         demoMood: newMood,
         verifiedClaimsCount: currentData.compassStats.today,
         totalTimeMinutes: currentData.totalTimeMinutes, // <-- NEW
-        sessionsToday: currentData.sessionsToday        // <-- NEW
-      }); 
+        sessionsToday: currentData.sessionsToday,       // <-- NEW
+        statsDate: todayKey() // so the popup treats these demo numbers as today's
+      });
     }
   };
 

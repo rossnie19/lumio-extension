@@ -13,17 +13,17 @@ async function runTest() {
 
   // 2. CURIOUS test — recent moderate activity, short session
   await setData("lastActivityTime", now);
-  await setData("currentSession", { startTime: now - 10 * 60 * 1000, activeMs: 10 * 60 * 1000, lastSeen: now });
+  await setData("currentSession", { startedAt: now - 10 * 60 * 1000, activeMs: 10 * 60 * 1000 });
   await setData("lastCompassUse", null);
 
   // 3. FOCUSED test — uncomment to test instead
   // await setData("lastActivityTime", now);
-  // await setData("currentSession", { startTime: now - 5 * 60 * 1000, activeMs: 5 * 60 * 1000, lastSeen: now });
+  // await setData("currentSession", { startedAt: now - 5 * 60 * 1000, activeMs: 5 * 60 * 1000 });
   // await setData("lastCompassUse", now);
 
   // 4. CONCERNED test — uncomment to test instead
   // await setData("lastActivityTime", now);
-  // await setData("currentSession", { startTime: now - 50 * 60 * 1000, activeMs: 50 * 60 * 1000, lastSeen: now });
+  // await setData("currentSession", { startedAt: now - 50 * 60 * 1000, activeMs: 50 * 60 * 1000 });
   // await setData("lastCompassUse", null);
 
   const mood = await getCompanionMood();

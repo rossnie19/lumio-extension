@@ -33,9 +33,11 @@ export function generateValidSources(highlightedText) {
 
     const encodedText = encodeURIComponent(highlightedText.trim());
 
+    // shape matches what the compass sidebar renders: { title, source, url }
     return TRUSTED_SOURCES.map(source => ({
         id: source.id,
-        name: source.name,
+        title: source.name,
+        source: new URL(source.url).hostname.replace(/^www\./, ""),
         url: `${source.url}${encodedText}`
     }));
 }

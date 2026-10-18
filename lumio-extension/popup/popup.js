@@ -1,4 +1,4 @@
-import { getData } from "../public/shared/storage.js";
+import { getData, getTodayStats } from "../public/shared/storage.js";
 import { getCompanionMood, normalizeMood } from "../public/shared/companionState.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             statClaimsEl.textContent = currentClaimsCount;
         }
 
-        const totalMinutes = await getData("totalTimeMinutes") || 78; 
-        const sessions = await getData("sessionsToday") || 2;
+        // tracked by background.js, reset every day
+        const { totalTimeMinutes: totalMinutes, sessionsToday: sessions } = await getTodayStats();
 
         // 2. Convert minutes into "Xh Ym" format
         const hours = Math.floor(totalMinutes / 60);
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             timeEl.textContent = formattedTime;
         }
         if (sessionsEl) {
-            // Adds an "S" if there's more than 1 session!
-            sessionsEl.textContent = sessions === 1 ? "1 AI SESSION" : `${sessions} AI SESSIONS`;
+            // the label "AI Sessions:" is already in popup.html, so just the number
+            sessionsEl.textContent = sessions;
         }
 
         // 3. Inject dynamic text into the UI
