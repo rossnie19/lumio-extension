@@ -1,8 +1,11 @@
-import { generateValidSources, AI_DOMAINS, SESSION_CONFIG, DEFAULT_PET_NAME, DEFAULT_CHARACTER } from "../shared/constants.js";
+import { buildSearchLinks, AI_DOMAINS, SESSION_CONFIG, DEFAULT_PET_NAME, characterById } from "../shared/constants.js";
 import { getData, setData, addTodayStats, getTodayStats, LEGACY_KEYS } from "../shared/storage.js";
 import { getCompanionMood } from "../shared/companionState.js";
+import { pickDialogueLine } from "../shared/dialogue.js";
 import { rewriteClaim } from "../shared/claimRewrite.js";
 import { searchSources } from "../shared/sourceSearch.js";
+
+const COMPASS_MENU_ID = "compass-check";
 
 // --- INSTALL / UPDATE ---
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
@@ -10,19 +13,18 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
         await setData("installDate", Date.now()); // the pet's age counts from here
     }
     await chrome.storage.local.remove(LEGACY_KEYS); // clean up data older versions wrote
-});
 
-// --- COMPASS CONTEXT MENU ---
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.contextMenus.create({
-        id: "verify-compass", // Matched ID to the event listener below
-        title: 'Check "%s" with Compass',
-        contexts: ["selection"]
+    // right-click menu for Compass (cleared first so an update never leaves an old entry behind)
+    chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({ id: COMPASS_MENU_ID, title: 'Check "%s" with Compass', contexts: ["selection"] });
     });
+
+    createTickAlarm();
 });
 
+// --- COMPASS ---
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId === "verify-compass" && info.selectionText) {
+    if (info.menuItemId === COMPASS_MENU_ID && info.selectionText) {
         const selectedText = info.selectionText.trim();
         if (!tab?.id) return;
         const requestId = `${Date.now()}-${Math.random()}`; // so the sidebar ignores results of an older claim
@@ -54,7 +56,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             query,
             usedAI,
             ...results,
-            links: generateValidSources(query) // "search more on" links, using the cleaned-up query
+            links: buildSearchLinks(query) // "search more on" links, using the cleaned-up query
         }).catch(() => {}); // the tab was closed or navigated away meanwhile
     }
 });
@@ -190,8 +192,7 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
 function createTickAlarm() {
     chrome.alarms.create(TICK_ALARM_NAME, { periodInMinutes: TICK_INTERVAL_MINUTES });
 }
-chrome.runtime.onInstalled.addListener(createTickAlarm);
-chrome.runtime.onStartup.addListener(createTickAlarm); // alarms can be cleared when the browser restarts
+chrome.runtime.onStartup.addListener(createTickAlarm); // alarms can be cleared when the browser restarts (install: above)
 
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === TICK_ALARM_NAME) {
@@ -204,11 +205,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 async function getPetState() {
     const { activeCharacter, petName, showPetOnAISites } =
         await chrome.storage.local.get(["activeCharacter", "petName", "showPetOnAISites"]);
+    const character = characterById(activeCharacter?.id);
+    const mood = await getCompanionMood();
     return {
         enabled: showPetOnAISites !== false, // on unless switched off in the dashboard
-        character: activeCharacter || DEFAULT_CHARACTER,
+        character,
         petName: petName || DEFAULT_PET_NAME,
-        mood: await getCompanionMood(),
+        mood,
+        line: pickDialogueLine(character.id, mood), // what the pet says when clicked (dialogue.js)
         today: await getTodayStats()
     };
 }

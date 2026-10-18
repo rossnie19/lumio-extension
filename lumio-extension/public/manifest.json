@@ -26,7 +26,8 @@
         "contextMenus",
         "scripting",
         "alarms",
-        "activeTab"
+        "activeTab",
+        "sidePanel"
     ],
     "web_accessible_resources": [
         {
@@ -52,5 +53,8 @@
             ],
             "run_at": "document_idle"
         }
-    ]
+    ],
+    "side_panel": {
+        "default_path": "pages/dashboard/dashboard.html"
+    }
 }

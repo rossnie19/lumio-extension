@@ -2,34 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="/assets/fonts/fonts.css">
+  <!-- shared with the dashboard panel, so both look the same -->
+  <link rel="stylesheet" href="../pages/src/styles/theme.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="popup-container">
-    
-    <!-- Left Column: Stats & Info -->
-    <div class="left-col">
-      <!-- placeholders until popup.js loads the real values -->
-      <h1 class="pet-name" id="pet-name">&nbsp;</h1>
-      <h2 class="pet-mood" id="pet-mood">&nbsp;</h2>
-
-      <div class="activity-section">
-        <p class="section-title">TODAY'S ACTIVITY:</p>
-        <p>AI Sessions: <span id="stat-sessions">–</span></p>
-        <p>Time with AI: <span id="stat-time">–</span></p>
-        <p>Claims Checked: <span id="stat-claims">–</span></p>
+  <!-- placeholders ("–", blank) until popup.js loads the real values -->
+  <section>
+    <div class="companion-card">
+      <div class="companion-portrait">
+        <img id="companion-sprite" src="/assets/companion/mangkukulam.png" alt="Companion" />
+      </div>
+      <div class="companion-info">
+        <div class="companion-type" id="pet-type">&nbsp;</div>
+        <h1 class="companion-name" id="pet-name">&nbsp;</h1>
+        <div class="companion-tags">
+          <span class="mood-chip" id="pet-mood">&nbsp;</span>
+          <span id="pet-age"></span>
+        </div>
       </div>
     </div>
+    <p class="speech-bubble" id="pet-line">&nbsp;</p>
+  </section>
 
-    <!-- Right Column: Character & Button -->
-    <div class="right-col">
-      <!-- Fallback image, will be replaced by JS -->
-      <img id="companion-sprite" src="/assets/companion/mangkukulam.png" alt="Companion" />
-      <button id="open-dashboard" class="dashboard-link">Dashboard ▶</button>
+  <section>
+    <h2 class="section-title">TODAY</h2>
+    <div class="tiles three">
+      <div class="tile bg-orange"><span class="tile-value" id="stat-time">–</span><span class="tile-label">with AI</span></div>
+      <div class="tile bg-purple"><span class="tile-value" id="stat-sessions">–</span><span class="tile-label" id="stat-sessions-label">sessions</span></div>
+      <div class="tile bg-green"><span class="tile-value" id="stat-claims">–</span><span class="tile-label">checked</span></div>
     </div>
+  </section>
 
-  </div>
-  
+  <button id="open-dashboard" class="pixel-btn select-btn open-btn">OPEN DASHBOARD &gt;</button>
+
   <script type="module" src="popup.js"></script>
 </body>
 </html>

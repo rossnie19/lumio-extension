@@ -42,7 +42,7 @@ export default function CompassAISetup() {
     : STATUS_TEXT[status] || STATUS_TEXT.unavailable;
 
   return (
-    <div className="compass-ai-setup">
+    <div className="compass-ai-setup card">
       <div>
         <span className="compass-ai-label">COMPASS AI:</span> {text}
       </div>

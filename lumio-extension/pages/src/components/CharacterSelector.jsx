@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const CHARACTERS = [
-  { id: 'mangkukulam', name: 'MANGKUKULAM', image: '/assets/companion/mangkukulam.png' },
-  { id: 'manananggal', name: 'MANANANGGAL', image: '/assets/companion/manananggal.png' },
-  { id: 'tikbalang', name: 'TIKBALANG', image: '/assets/companion/tikbalang.png' }
-];
+import { CHARACTERS } from '../../../public/shared/constants.js';
 
 const indexOfCharacter = (id) => Math.max(0, CHARACTERS.findIndex(c => c.id === id));
 
@@ -28,13 +23,9 @@ export default function CharacterSelector({ activeId, onSelect }) {
   const currentCharacter = CHARACTERS[currentIndex];
 
   return (
-    <div className="character-selector-card">
+    <div className="character-selector-card card">
       <div className="character-avatar-container">
-        <img
-          src={currentCharacter.image}
-          alt={currentCharacter.name}
-          style={{ width: '70px', height: '70px', imageRendering: 'pixelated' }}
-        />
+        <img src={currentCharacter.image} alt={currentCharacter.name} />
       </div>
 
       <div className="character-selector-controls">

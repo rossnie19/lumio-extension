@@ -1,16 +1,8 @@
 import { SESSION_CONFIG } from "./constants.js";
 import { getData } from "./storage.js";
 
-// the only valid mood values (always lowercase)
+// the only mood values getCompanionMood() returns
 export const MOODS = ["curious", "focused", "concerned", "idle"];
-
-// turn any stored/legacy mood value ("Idle", "resting", "CURIOUS"...) into one of MOODS
-export function normalizeMood(mood) {
-  if (typeof mood !== "string") return "curious";
-  const lower = mood.toLowerCase();
-  if (lower === "resting") return "idle"; // old name for idle
-  return MOODS.includes(lower) ? lower : "curious";
-}
 
 // Determine current companion mood: curious, focused, concerned, or idle
 export async function getCompanionMood() {

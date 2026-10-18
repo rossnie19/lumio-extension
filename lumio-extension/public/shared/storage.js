@@ -30,10 +30,10 @@ export async function getHistory() {
     return (await getData("dailyHistory")) || {};
 }
 
-//get today's stats (zeros if nothing was tracked today yet)
+//get today's stats { minutes, sessions, claims } (zeros if nothing was tracked today yet)
 export async function getTodayStats() {
-    const today = (await getHistory())[dayKey()] || emptyDay();
-    return { totalTimeMinutes: today.minutes, sessionsToday: today.sessions, claimsToday: today.claims };
+    const { minutes, sessions, claims } = { ...emptyDay(), ...(await getHistory())[dayKey()] };
+    return { minutes, sessions, claims };
 }
 
 async function writeTodayStats({ minutes, sessions, claims, domain }) {

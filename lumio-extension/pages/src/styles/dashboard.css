@@ -1,550 +1,514 @@
-/* --- GLOBAL COMPONENT HEADERS --- */
-.section-title {
-  font-size: 1.2rem !important;
-  margin: 0 0 20px 0 !important;
-  text-align: left !important;
-}
+/* Lumio dashboard: a narrow tabbed panel shown in Chrome's side panel (~320-500px wide).
+   Colours, fonts and the pieces shared with the popup live in theme.css; this file is panel layout only. */
 
-body {
+h1, h2, h3 {
   margin: 0;
-  background-color: #EAE6DB; 
-  font-family: 'VT323', monospace; 
-  color: #3E2723;
-  padding: 24px;
-  box-sizing: border-box;
-  height: 100vh; /* Locks height to viewport */
-  overflow: hidden; /* Removes scrolling on full screen */
-}
-
-h1, h2, h3, .section-title, .selector-title {
-  font-family: 'Press Start 2P', cursive;
+  font-family: var(--font-pixel);
+  font-weight: normal;
   text-transform: uppercase;
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.15); /* Soft drop shadow */
 }
 
-.dashboard-container {
-  max-width: 1400px; /* Widened to fit 3 columns comfortably */
-  margin: 0 auto;
-  height: 100%;
+strong { font-weight: normal; color: var(--ink); }
+
+/* --- BUILDING BLOCKS --- */
+.card {
+  padding: 12px;
+  background-color: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* --- PANEL FRAME --- */
+.panel {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-/* --- DASHBOARD LOGO --- */
-.dashboard-logo-container {
+.panel-header {
   display: flex;
-  justify-content: center;
-  margin-bottom: 40px;
-}
-
-.dashboard-logo {
-  max-width: 500px; /* Adjust this number if your logo is too big/small */
-  height: auto;
-  image-rendering: pixelated; /* Keeps the pixel art crisp! */
-  filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.15)); /* Adds the retro shadow behind the PNG */
-}
-
-/* 3-COLUMN LAYOUT */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.1fr; /* 3 Columns (Companion is slightly wider) */
-  gap: 32px;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* --- MONTHLY OVERVIEW (STATS UI) --- */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.stat-block {
-  border: 4px solid #333;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  border-radius: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: default;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 12px 8px;
 }
 
-.stat-block:hover {
-  transform: translateY(-6px);
-  box-shadow: 6px 10px 0px rgba(0, 0, 0, 0.2);
+.panel-logo {
+  height: 44px;
+  width: auto;
+  image-rendering: pixelated;
 }
 
-.stat-block h3 {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.8rem;
-  margin: 0 0 12px 0;
+/* --- TABS (one segmented bar) --- */
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 12px;
+  background-color: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.stat-block .stat-value {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 1.8rem;
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+.tab {
+  padding: 11px 2px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  border-left: 2px solid var(--paper-sunk);
+  cursor: pointer;
 }
 
-.bg-green { background-color: #2D4A3E; color: white; }
-.bg-orange { background-color: #D98C4A; color: white; }
-.bg-purple { background-color: #6D5A88; color: white; }
-.bg-red { background-color: #B55043; color: white; }
+.tab:first-child { border-left: none; }
 
+.tab:hover { color: var(--ink); background-color: var(--paper-sunk); }
+
+.tab.active {
+  color: var(--paper);
+  background-color: var(--ink);
+}
+
+.tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 12px 24px;
+  animation: tab-in 0.18s ease-out;
+}
+
+@keyframes tab-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* compass numbers: light cards with green numbers */
+.tile.stat-card {
+  color: var(--ink);
+  background-color: var(--paper);
+}
+
+.compass-number {
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: var(--green);
+}
+
+.tile.stat-card .tile-label { color: var(--ink-soft); }
+
+/* --- COMPANION extras (card itself is in theme.css) --- */
+.companion-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.edit-name {
+  padding: 2px;
+  font-size: 13px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.edit-name:hover { opacity: 1; background-color: rgba(255, 255, 255, 0.12); }
+
+.pet-name-input {
+  width: 100%;
+  padding: 6px;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink);
+  background-color: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  outline: none;
+}
+
+/* --- THIS WEEK (coins) --- */
+.weekly-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+}
+
+.weekly-row + .weekly-row { border-top: 1px dashed var(--paper-sunk); }
+
+.day-label {
+  width: 34px;
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.coin-slots {
+  display: flex;
+  gap: 4px;
+}
+
+.pixel-coin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+
+.coin-gold {
+  background-color: var(--gold);
+  box-shadow: inset -2px -2px 0 var(--gold-deep);
+}
+
+.coin-empty {
+  background-color: var(--paper-sunk);
+  border-color: #C9BBA3;
+}
+
+.day-time {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.weekly-note {
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--ink-faint);
+}
 
 /* --- MOST USED PLATFORM --- */
-.platform-card {
-  background-color: #D6C5AD; /* Now matches the dialogue box! */
-  border: 4px solid #8B7355;
-  padding: 24px;
-  /* Pulls the card upward, closer to the Monthly Overview */
-  margin-top: -16px; 
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15); /* Added shadow for depth */
-}
-
-.platform-card .section-title {
-  color: #6D5A88;
-  text-align: left;
-  margin-bottom: 24px;
-}
-
 .platform-content {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 48px;
-  padding-left: 16px;
+  gap: 16px;
 }
 
 .pixel-pie-chart {
-  width: 160px;
-  height: 160px;
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  border: var(--border);
   border-radius: 50%;
-  border: 4px solid #333;
-  box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
 }
 
 .platform-list {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: 6px;
+  min-width: 0;
 }
 
-/* Hover & Tooltips for Legend */
 .platform-rank-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 1.2rem;
-  position: relative;
-  cursor: help;
-  transition: transform 0.1s ease;
+  gap: 8px;
+  font-size: 19px;
 }
 
-.platform-rank-item:hover {
-  transform: translateX(4px);
+.rank-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--ink);
 }
 
-.platform-rank-item::after {
-  content: attr(data-percentage);
-  position: absolute;
-  left: 110%;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #3A2B20;
-  color: #FFFFFF;
-  padding: 6px 10px;
-  border: 2px solid #000;
-  font-family: 'VT323', monospace;
-  font-size: 1.2rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  box-shadow: 2px 2px 0px #000;
-  z-index: 10;
+.platform-name { color: var(--ink); text-transform: uppercase; }
+
+.platform-percent {
+  margin-left: auto;
+  color: var(--ink-soft);
 }
 
-.platform-rank-item:hover::after {
-  opacity: 1;
-}
+.platform-empty { color: var(--ink-soft); }
 
-.rank-number {
-  font-size: 1.6rem;
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-}
-
-.platform-name {
-  color: #333;
-}
-
-
-/* --- COMPANION UI (RIGHT COLUMN) --- */
-.companion-card {
-  background-color: #6D5A88;
-  border: 4px solid #2B213A;
-  color: #FFFFFF;
-  padding: 20px;
-  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.15);
-  image-rendering: pixelated;
-}
-
-.companion-title {
-  border-bottom: 2px dashed #A991D4;
-  padding-bottom: 8px;
-  margin-bottom: 12px !important;
-}
-
-.mood-badge {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.7rem;
-  color: #A991D4;
-  margin-bottom: 16px;
-}
-
-.companion-avatar-large {
+/* --- COMPASS TAB --- */
+.compass-stats-container {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -20px;
-}
-
-.dialogue-box {
-  background-color: #D6C5AD;
-  border: 4px solid #8B7355;
-  padding: 16px;
-  font-size: 1.4rem;
-  line-height: 1.2;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-}
-
-
-/* --- CHARACTER SELECTOR --- */
-.character-selector-card {
-  background-color: #5A4534;
-  border: 4px solid #3A2B20;
-  padding: 16px;
-  display: flex;
-  gap: 20px;
+  flex-direction: column;
   align-items: center;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  gap: 12px;
+}
+
+.compass-logo {
+  width: 100%;
+  max-width: 170px;
+  height: auto;
   image-rendering: pixelated;
-  margin-top: 16px;
+}
+
+.compass-stats-container .tiles { width: 100%; }
+
+.compass-ai-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--ink-soft);
+}
+
+.compass-ai-label {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--ink);
+}
+
+/* --- FOLD-OUT GUIDES (mood explainer, how Compass works) --- */
+.guide summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  line-height: 1.6;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.guide summary::-webkit-details-marker { display: none; }
+
+/* pixel arrow that turns when the guide opens */
+.guide summary::before {
+  content: "";
+  flex-shrink: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent var(--ink);
+  transition: transform 0.15s ease;
+}
+
+.guide[open] summary::before { transform: rotate(90deg); }
+.guide[open] summary { margin-bottom: 12px; }
+
+.guide p { margin: 0 0 10px; }
+
+.guide .guide-intro { color: var(--ink-soft); }
+
+.guide .guide-note {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  color: var(--ink-soft);
+  border-top: 2px dashed var(--paper-sunk);
+}
+
+.guide-steps {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.guide-steps > li {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 10px;
+  counter-increment: step;
+}
+
+/* numbered pixel badges */
+.guide-steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 20px;
+  height: 20px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  line-height: 20px;
+  text-align: center;
+  color: var(--ink);
+  background-color: var(--gold);
+  border: 2px solid var(--ink);
+}
+
+/* each step starts with its key word, highlighted like a marker pen */
+.guide-steps > li > strong:first-child {
+  padding: 0 2px;
+  background-color: rgba(241, 188, 79, 0.45);
+}
+
+.guide-steps ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+
+.mood-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mood-list li {
+  padding: 8px 10px;
+  background-color: var(--paper-sunk);
+  border-left: 5px solid var(--purple);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.mood-list li:nth-child(1) { border-left-color: var(--green); }  /* focused */
+.mood-list li:nth-child(3) { border-left-color: var(--red); }    /* concerned */
+.mood-list li:nth-child(4) { border-left-color: var(--grey); }   /* idle */
+
+.mood-list li.current {
+  background-color: var(--purple-tint);
+  outline: 2px solid var(--ink);
+}
+
+.mood-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+}
+
+.now-tag {
+  padding: 2px 4px;
+  font-size: 6px;
+  color: #FFFFFF;
+  background-color: var(--ink);
+}
+
+.mood-meaning { color: var(--ink-soft); }
+
+/* --- PET TAB --- */
+.character-selector-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .character-avatar-container {
-  width: 90px;
-  height: 90px;
-  background-color: #3A2B20;
-  border-radius: 4px;
+  flex-shrink: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: white;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: var(--paper-sunk);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.character-avatar-container img {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
 }
 
 .character-selector-controls {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+  flex: 1;
+  min-width: 0;
 }
 
 .selector-header {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .selector-title {
-  color: #D98C4A;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
-  margin-bottom: 6px;
+  font-family: var(--font-text);
+  font-size: 16px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .selector-name {
-  color: #FFFFFF;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.8rem;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--ink);
 }
 
 .selector-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
 }
 
-/* --- CHARACTER PNG DROP SHADOWS --- */
-.companion-card img,
-.character-avatar-container img {
-  filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.25)); 
-}
-
-/* --- PIXEL BUTTONS (HOVER & CLICK ANIMATIONS) --- */
-.pixel-btn {
-  font-family: 'Press Start 2P', cursive;
-  border: 4px solid #000;
+/* on/off switch row */
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
-  text-transform: uppercase;
-  box-shadow: 4px 4px 0px #000;
-  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.05s ease;
 }
 
-.pixel-btn:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0px 0px 0px #000;
+.switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.switch-title {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+}
+
+.switch-hint { color: var(--ink-soft); }
+
+.switch {
+  appearance: none;
+  flex-shrink: 0;
+  position: relative;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  background-color: var(--paper-sunk);
+  border: var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: var(--ink);
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.switch:checked { background-color: var(--green); }
+
+.switch:checked::after {
+  background-color: #FFFFFF;
+  transform: translateX(20px);
 }
 
 .arrow-btn {
-  background-color: #FFFFFF;
-  color: #000;
-  padding: 8px 12px;
-  font-size: 1rem;
+  padding: 6px 9px;
+  font-size: 9px;
+  background-color: var(--paper);
 }
 
-.arrow-btn:hover {
-  background-color: #D1D1D1;
-}
+.arrow-btn:hover { background-color: var(--paper-sunk); }
 
-.select-btn {
-  background-color: #F1BC4F;
-  color: #FFFFFF;
-  padding: 10px 16px;
-  font-size: 0.7rem;
-  text-shadow: 2px 2px 0px #000;
-  margin-left: auto;
-}
+.selector-buttons .select-btn { margin-left: auto; }
 
-.select-btn:hover {
-  background-color: #D4A23A;
-}
 
-/* --- WEEKLY OVERVIEW --- */
-.weekly-container {
-  background-color: #5A4534; /* Dark brown card background */
-  border: 4px solid #3A2B20;
-  padding: 24px; /* Matches the padding of the pie chart card */
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
-}
-
-/* Force the Weekly header to be dark brown */
-.weekly-container .section-title {
-  color: #D98C4A !important; 
-}
-
-.weekly-row {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 12px; /* Slightly increased gap for breathing room */
-  position: relative;
-  cursor: help;
-  transition: transform 0.1s ease;
-}
-
-.weekly-row:hover {
-  transform: translateX(4px); 
-}
-
-/* The Hover Tooltip */
-.weekly-row::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 100%; 
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #3A2B20;
-  color: #FFFFFF;
-  padding: 6px 10px;
-  border: 2px solid #000;
-  font-family: 'VT323', monospace;
-  font-size: 1.2rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  box-shadow: 2px 2px 0px #000;
-  z-index: 10;
-  margin-left: 16px; 
-}
-
-.weekly-row:hover::after {
-  opacity: 1;
-}
-
-.day-label {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.9rem; /* Increased font size */
-  color: #FFFFFF; /* White text so it can be read on brown */
-  width: 140px; /* Slightly wider */
-  text-align: right;
-  margin-right: 16px; 
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.5); /* Darker shadow */
-}
-
-.coin-slots {
-  display: flex;
-  gap: 8px; /* Restored gap */
-}
-
-/* Enlarged Coin Shape */
-.pixel-coin {
-  width: 22px; /* Increased from 18px */
-  height: 22px; /* Increased from 18px */
-  border: 3px solid #3A2B20; 
-  border-radius: 4px; 
-  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
-}
-
-/* Filled Gold Coin */
-.coin-gold {
-  background-color: #F1BC4F;
-  box-shadow: inset -3px -3px 0px rgba(212, 162, 58, 1), 2px 2px 0px rgba(0,0,0,0.2); 
-}
-
-/* Empty White Slot */
-.coin-empty {
-  background-color: #FFFFFF;
-}
-
-/* --- RESPONSIVE MOBILE/TABLET LAYOUT --- */
-@media (max-width: 1100px) {
-  body {
-    height: auto; /* Removes the height lock */
-    overflow-y: auto; /* Brings the scrollbar back */
-  }
-  
-  .dashboard-grid {
-    grid-template-columns: 1fr; /* Stacks everything into a single column */
-    gap: 40px;
-  }
-}
-
-/* --- COMPASS STATS ROW --- */
-.compass-stats-container {
-  margin-top: 16px;
-  text-align: center;
-}
-
-/* --- COMPASS LOGO --- */
-.compass-logo-container {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 24px;
-  margin-left: 8px; 
-}
-
-.compass-logo {
-  max-width: 250px; /* Adjust based on how wide your exported PNG is */
-  height: auto;
-  image-rendering: pixelated;
-  filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.15));
-}
-
-/* 3-Column Stats Row */
-.compass-row {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-start;
-}
-
-.compass-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 30%;
-  /* NEW: Added transition and cursor for the float effect */
-  transition: transform 0.2s ease;
-  cursor: default; 
-}
-
-/* NEW: The upward float on hover */
-.compass-col:hover {
-  transform: translateY(-6px);
-}
-
-.compass-number {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 2.5rem;
-  color: #2D4A3E; /* Dark Green */
-  margin-bottom: 16px;
-  -webkit-text-stroke: 1px #000;
-  text-shadow: 3px 3px 0px rgba(0,0,0,0.15);
-}
-
-.compass-label {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
-  color: #333;
-  line-height: 1.6;
-  text-align: center;
-  -webkit-text-stroke: 0px; /* Make sure small text is readable */
-}
-
-/* --- Retro Input Field Styles --- */
-.pet-name-input {
-  font-family: 'Press Start 2P', cursive; /* Matches your chunky retro font */
-  font-size: 14px; /* Adjust if it looks too big/small */
-  background-color: rgba(255, 255, 255, 0.2); /* Slightly transparent background */
-  color: #31263E; /* Matches the dark purple text in your screenshot */
-  border: 2px dashed #31263E; /* Retro dashed border */
-  padding: 8px;
-  outline: none; /* KILLS THE DEFAULT BLUE GLOW */
-  width: 80%; /* Adjust to fit the box */
-  text-transform: uppercase; /* Keeps the name in all caps */
-}
-
-/* When the user clicks on it to type */
-.pet-name-input:focus {
-  border: 2px solid #31263E; /* Turns into a solid line when typing */
-  background-color: rgba(255, 255, 255, 0.4); /* Gets a bit brighter */
-}
-/* --- COMPASS AI STATUS (under the compass stats) --- */
-.compass-ai-setup {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 1.1rem;
-  color: #5A4534;
-  border-top: 3px dashed #8B7355;
-  padding-top: 12px;
-}
-
-.compass-ai-label {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
-  color: #3A2B20;
-}
-
-.compass-ai-setup .select-btn {
-  margin-left: 0;
-  flex-shrink: 0;
-}
-
-/* --- WALKING PET TOGGLE (under the character selector) --- */
-.pet-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
-  color: #5A4534;
-  cursor: pointer;
-  user-select: none;
-}
-
-.pet-toggle input {
-  width: 18px;
-  height: 18px;
-  accent-color: #6D5A88;
-  cursor: pointer;
+@media (prefers-reduced-motion: reduce) {
+  .tab-body { animation: none; }
+  .switch, .switch::after, .guide summary::before { transition: none; }
 }

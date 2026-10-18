@@ -1,0 +1,268 @@
+/* Shared Lumio look: colours, fonts and the pieces that appear in BOTH the toolbar popup
+   (popup/popup.html) and the side panel dashboard (pages/src). Change them here, not in
+   popup.css / dashboard.css, so the two never drift apart.
+   The Compass sidebar and the walking pet (content scripts) can't load this file; they copy
+   the colour values. */
+
+:root {
+  /* surfaces */
+  --page: #EAE3D2;
+  --paper: #F6F1E6;
+  --paper-sunk: #EFE7D6;
+  /* ink */
+  --ink: #2E2219;
+  --ink-soft: #6B5847;
+  --ink-faint: #9A8670;
+  /* accents (dark enough for white text) */
+  --purple: #5E4B7E;
+  --purple-deep: #3F3158;
+  --purple-tint: #E6DDF3;
+  --green: #2F5144;
+  --orange: #B4652A;
+  --red: #A3453A;
+  --gold: #F1BC4F;
+  --gold-deep: #C9952F;
+  --grey: #7D7468;
+  /* shared */
+  --border: 3px solid var(--ink);
+  --shadow: 3px 3px 0 rgba(46, 34, 25, 0.22);
+  --radius: 4px;
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-text: 'VT323', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--page);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 19px;
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* --- section title with a little gold pixel --- */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  font-weight: normal;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.section-title::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background-color: var(--gold);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* --- mood chip --- */
+.mood-chip {
+  display: inline-block;
+  padding: 5px 7px;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background-color: var(--purple-deep); /* curious */
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.mood-chip.mood-focused { background-color: var(--green); }
+.mood-chip.mood-concerned { background-color: var(--red); }
+.mood-chip.mood-idle { background-color: var(--grey); }
+
+/* --- companion card: portrait + type + name + mood --- */
+.companion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  color: #FFFFFF;
+  background-color: var(--purple);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.companion-portrait {
+  flex-shrink: 0;
+  padding: 5px;
+  background-color: var(--purple-deep);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.companion-portrait img {
+  display: block;
+  width: 68px;
+  height: 68px;
+  image-rendering: pixelated;
+}
+
+.companion-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.companion-type {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--purple-tint);
+  opacity: 0.85;
+}
+
+.companion-name {
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  font-weight: normal;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.companion-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--purple-tint);
+}
+
+/* --- speech bubble under the companion card, pointing up at the portrait --- */
+.speech-bubble {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  font-family: var(--font-text);
+  font-size: 19px;
+  line-height: 1.1;
+  text-align: left;
+  color: var(--ink);
+  background-color: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.speech-bubble::before,
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.speech-bubble::before {
+  top: -12px;
+  left: 33px;
+  border-width: 0 9px 11px;
+  border-bottom-color: var(--ink);
+}
+
+.speech-bubble::after {
+  top: -7px;
+  left: 36px;
+  border-width: 0 6px 8px;
+  border-bottom-color: var(--paper);
+}
+
+button.speech-bubble { cursor: pointer; }
+button.speech-bubble:hover { background-color: #FFFDF8; }
+
+/* --- coloured stat tiles --- */
+.tiles {
+  display: grid;
+  gap: 8px;
+}
+
+.tiles.two { grid-template-columns: 1fr 1fr; }
+.tiles.three { grid-template-columns: repeat(3, 1fr); }
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 66px;
+  padding: 9px 4px 7px;
+  text-align: center;
+  color: #FFFFFF;
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.tile-value {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.tile-label {
+  font-family: var(--font-text);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.bg-green { background-color: var(--green); }
+.bg-orange { background-color: var(--orange); }
+.bg-purple { background-color: var(--purple); }
+.bg-red { background-color: var(--red); }
+
+/* --- pixel buttons --- */
+.pixel-btn {
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  color: var(--ink);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.select-btn {
+  padding: 7px 10px;
+  font-size: 8px;
+  background-color: var(--gold);
+}
+
+.select-btn:hover { background-color: var(--gold-deep); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-btn { transition: none; }
+}

@@ -84,6 +84,7 @@ export function buildLiveView(history, now = new Date()) {
     const domainBreakdown = Object.entries(domainTotals).map(([domain, timeMinutes]) => ({ domain, timeMinutes }));
 
     return {
+        today: { minutes: today.minutes, sessions: today.sessions, claims: today.claims },
         weeklyActivity,
         compassStats: { today: today.claims, week: weekClaims, rate }, // rate null = no sessions this week
         monthlyMinutes: month.reduce((sum, day) => sum + day.minutes, 0),

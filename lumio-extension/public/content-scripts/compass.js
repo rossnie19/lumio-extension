@@ -19,9 +19,24 @@ function safeUrl(url) {
   return /^https?:\/\//i.test(url || "") ? url : "#";
 }
 
+// The pixel fonts ship with the extension (assets/fonts). Fonts declared inside a shadow root
+// don't load in Chrome, so they're registered on the page under Lumio-only names instead
+function loadLumioFonts() {
+  if (window.__lumioFontsLoaded) return;
+  window.__lumioFontsLoaded = true;
+  const fonts = [["Lumio Pixel", "press-start-2p.woff2"], ["Lumio Text", "vt323.woff2"]];
+  for (const [family, file] of fonts) {
+    const font = new FontFace(family, `url("${chrome.runtime.getURL(`assets/fonts/${file}`)}") format("woff2")`);
+    document.fonts.add(font);
+    font.load().catch(() => {}); // e.g. blocked by the page: the monospace fallback still works
+  }
+}
+
 // Function to create and inject the Compass retro sidebar.
 // it opens right away in a "searching" state; background.js sends the results when they're ready
 function injectCompassSidebar(claimText, requestId) {
+  loadLumioFonts();
+
   // 1. Remove existing sidebar if one is already open
   const existingSidebar = document.getElementById("lumio-compass-root");
   if (existingSidebar) {
@@ -45,32 +60,51 @@ function injectCompassSidebar(claimText, requestId) {
   // 6. Inject HTML & CSS into Shadow Root
   shadow.innerHTML = `
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-
       :host {
         all: initial;
         position: fixed;
         top: 0;
         right: 0;
         width: 380px;
+        max-width: 100vw;
         height: 100vh;
-        z-index: 2147483647; 
-        font-family: 'VT323', monospace;
+        z-index: 2147483647;
         pointer-events: auto;
+        --page: #EAE3D2;
+        --paper: #F6F1E6;
+        --paper-sunk: #EFE7D6;
+        --ink: #2E2219;
+        --ink-soft: #6B5847;
+        --ink-faint: #9A8670;
+        --purple: #5E4B7E;
+        --green: #2F5144;
+        --red: #A3453A;
+        --gold: #F1BC4F;
+        --border: 3px solid var(--ink);
+        --shadow: 3px 3px 0 rgba(46, 34, 25, 0.22);
+        --radius: 4px;
+        --font-pixel: 'Lumio Pixel', monospace;
+        --font-text: 'Lumio Text', monospace;
+        font-family: var(--font-text);
+        font-size: 19px;
+        line-height: 1.15;
+        color: var(--ink);
       }
 
+      * { box-sizing: border-box; }
+
       .sidebar-container {
-        width: 100%;
-        height: 100%;
-        background-color: #EAE6DB; /* Retro cream background */
-        border-left: 5px solid #3A2B20;
-        box-sizing: border-box;
-        padding: 24px 20px;
         display: flex;
         flex-direction: column;
-        box-shadow: -8px 0px 20px rgba(0,0,0,0.3);
+        gap: 14px;
+        width: 100%;
+        height: 100%;
+        padding: 14px 16px 24px;
         overflow-y: auto;
-        animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background-color: var(--page);
+        border-left: 4px solid var(--ink);
+        box-shadow: -6px 0 18px rgba(0, 0, 0, 0.25);
+        animation: slideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1);
       }
 
       @keyframes slideIn {
@@ -78,137 +112,151 @@ function injectCompassSidebar(claimText, requestId) {
         to { transform: translateX(0); }
       }
 
-      .close-btn {
-        align-self: flex-end;
-        background: transparent;
-        border: none;
-        color: #8B0000;
-        font-family: 'Press Start 2P', cursive;
-        font-size: 1.4rem;
-        cursor: pointer;
-        margin-bottom: 8px; /* Slightly reduced margin */
-        transition: transform 0.1s ease;
+      .sidebar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
 
-      .close-btn:hover {
-        transform: scale(1.2);
-      }
-
-      /* --- Change 4 (Part 2): Logo Styling --- */
       .header-logo {
-        display: block;
-        margin: 0 auto 12px;
-        max-width: 150px;
-        image-rendering: pixelated; /* Keep retro crispness */
+        height: 34px;
+        width: auto;
+        image-rendering: pixelated;
       }
+
+      .close-btn {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        font-family: var(--font-pixel);
+        font-size: 10px;
+        color: var(--ink);
+        background-color: var(--paper);
+        border: var(--border);
+        border-radius: var(--radius);
+        box-shadow: 2px 2px 0 var(--ink);
+        cursor: pointer;
+      }
+
+      .close-btn:hover { background-color: var(--paper-sunk); }
+      .close-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
       .subtitle {
-        font-family: 'VT323', monospace;
-        font-size: 1.2rem;
-        color: #3A2B20;
-        text-align: center;
-        margin-bottom: 24px;
+        margin-top: -6px;
+        font-size: 18px;
+        color: var(--ink-soft);
       }
 
-      /* --- Change 5: New Claim Section Color (warmer tone) --- */
       .claim-preview {
-        background-color: #F0E0C5; 
-        border: 2px dashed #8B7355;
         padding: 10px 12px;
-        font-size: 1.1rem;
-        color: #2D1E18;
-        margin-bottom: 20px;
-        line-height: 1.2;
+        font-size: 19px;
+        background-color: var(--paper);
+        border: 2px dashed var(--ink-faint);
+        border-radius: var(--radius);
       }
 
-      .cards-list {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-
-      .compass-card {
-        display: block;
-        background-color: #D6C5AD;
-        border: 3px solid #8B7355;
-        border-radius: 12px;
-        padding: 12px 14px;
-        text-decoration: none;
-        box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-        transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-      }
-
-      /* --- Changes 1 & 2: Float up + Darker Shade on Hover --- */
-      .compass-card:hover {
-        transform: translateY(-5px); /* Float up vertically */
-        background-color: #BCA78D; /* Slightly darker than base #D6C5AD */
-        box-shadow: 4px 9px 0px rgba(0,0,0,0.15); /* Expand shadow to emphasize float */
-      }
-
-      /* --- Change 3: Click Animation (Toggle press effect) --- */
-      .compass-card:active {
-        transform: translateY(-2px) scale(0.97); /* "Press down" slightly */
-        box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-        transition: transform 0.05s ease; /* Fast click response */
-      }
-
-      .card-title {
-        font-family: 'VT323', monospace;
-        font-size: 1.25rem;
-        color: #2B1D14;
-        line-height: 1.1;
-        margin-bottom: 4px; /* Reduced space before font shift */
-      }
-
-      /* --- Change 6: Change Source font to VT323 (matched to title) --- */
-      .card-source {
-        font-family: 'VT323', monospace; /* Aligned with title font */
-        font-size: 0.85rem; /* Increased size since VT323 is taller/lighter */
-        color: #6D5A88;
-        letter-spacing: 1px;
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .card-meta {
-        font-size: 1rem;
-        color: #5A4534;
-        line-height: 1.1;
-        margin-bottom: 4px;
-      }
-
-      .section-label {
-        font-family: 'Press Start 2P', cursive;
-        font-size: 0.6rem;
-        color: #3A2B20;
-        margin: 18px 0 10px;
+      .claim-preview strong,
+      .search-info strong {
+        font-weight: normal;
+        color: var(--ink-soft);
       }
 
       .search-info {
-        font-size: 1.05rem;
-        color: #3A2B20;
-        line-height: 1.2;
+        font-size: 18px;
         margin-bottom: 4px;
       }
 
       .tag {
         display: inline-block;
-        font-size: 0.85rem;
-        color: #FFFFFF;
-        background-color: #6D5A88;
-        padding: 0 6px;
         margin-left: 4px;
-        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 15px;
+        color: #FFFFFF;
+        background-color: var(--purple);
+        border-radius: var(--radius);
+        vertical-align: 1px;
       }
 
-      .tag.plain { background-color: #8B7355; }
+      .tag.plain { background-color: var(--ink-soft); }
+
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 14px 0 8px;
+        font-family: var(--font-pixel);
+        font-size: 8px;
+      }
+
+      .section-label::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background-color: var(--gold);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+
+      .cards-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .compass-card {
+        display: block;
+        padding: 10px 12px;
+        text-decoration: none;
+        color: var(--ink);
+        background-color: var(--paper);
+        border: var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .compass-card:hover {
+        transform: translate(-1px, -2px);
+        box-shadow: 4px 5px 0 rgba(46, 34, 25, 0.25);
+      }
+
+      .compass-card:active {
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 rgba(46, 34, 25, 0.25);
+      }
+
+      .compass-card:focus-visible,
+      .more-links a:focus-visible,
+      .close-btn:focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 2px;
+      }
+
+      .card-title {
+        margin-bottom: 4px;
+        font-size: 20px;
+        line-height: 1.05;
+      }
+
+      .card-meta {
+        margin-bottom: 4px;
+        font-size: 17px;
+        color: var(--ink-soft);
+      }
+
+      .card-source {
+        font-size: 16px;
+        color: var(--purple);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       .status {
-        font-size: 1.2rem;
-        color: #5A4534;
-        padding: 12px 0;
+        padding: 8px 0;
+        font-size: 19px;
+        color: var(--ink-soft);
       }
 
       .status.loading::after {
@@ -224,37 +272,41 @@ function injectCompassSidebar(claimText, requestId) {
       }
 
       .note {
-        font-size: 0.95rem;
-        color: #8B7355;
-        margin-top: 4px;
+        margin-top: 6px;
+        font-size: 16px;
+        color: var(--ink-faint);
       }
 
       .more-links {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
       }
 
       .more-links a {
-        font-size: 1rem;
-        color: #3A2B20;
-        background-color: #F0E0C5;
-        border: 2px solid #8B7355;
-        border-radius: 8px;
-        padding: 2px 8px;
+        padding: 3px 9px;
+        font-size: 17px;
+        color: var(--ink);
         text-decoration: none;
+        background-color: var(--paper);
+        border: 2px solid var(--ink);
+        border-radius: var(--radius);
       }
 
-      .more-links a:hover { background-color: #D6C5AD; }
+      .more-links a:hover { background-color: var(--gold); }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sidebar-container, .status.loading::after { animation: none; }
+        .compass-card { transition: none; }
+      }
     </style>
 
     <div class="sidebar-container">
-      <button class="close-btn" id="close-compass">✖</button>
-      
-      <!-- --- Change 4 (Part 3): Render PNG Logo --- -->
-      <img src="${logoUrl}" class="header-logo" alt="Compass Logo">
-      
-      <div class="subtitle">Check claims with references</div>
+      <div class="sidebar-top">
+        <img src="${logoUrl}" class="header-logo" alt="Compass">
+        <button class="close-btn" id="close-compass" title="Close">X</button>
+      </div>
+      <div class="subtitle">Check claims with real research</div>
 
       <div class="claim-preview">
         <strong>Claim:</strong> "${escapeHtml(shortClaim)}"

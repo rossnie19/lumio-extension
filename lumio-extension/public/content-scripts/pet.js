@@ -1,7 +1,7 @@
 // The walking pet on AI sites (see "content_scripts" in manifest.json).
 // It roams the bottom of the right-hand margin (so it never covers the chat box) and acts out the
-// companion's mood. The character images are single still frames, so all motion is done with CSS
-// (hop, flip, breathe); real sprite sheets can replace the <img> later without touching the movement.
+// companion's mood. Movement (hop, flip, breathe) is CSS; the face/wings/smoke animate from a sprite
+// sheet per character (assets/companion/sprites, made by scripts/make_sprites.py).
 (() => {
   if (window.__lumioPetLoaded) return;
   window.__lumioPetLoaded = true;
@@ -24,6 +24,16 @@
   // characters that fly instead of walk (the manananggal has wings and no legs)
   const FLYING_CHARACTERS = new Set(["manananggal"]);
 
+  // sprite sheets: one row of 4 square frames (see scripts/make_sprites.py)
+  const SPRITE_SHEETS = new Set(["mangkukulam", "manananggal", "tikbalang"]);
+  const FRAME_COUNT = 4;
+  const FRAME = { open: 0, closed: 1, moveA: 2, moveB: 3 };
+  const MOVE_CYCLE = [FRAME.open, FRAME.moveA, FRAME.open, FRAME.moveB];
+  const WALK_FRAME_MS = 260;
+  const HOVER_FRAME_MS = 450; // flying characters keep flapping while standing still
+  const BLINK_MS = 160;
+  const BLINK_EVERY_MS = [2500, 6000];
+
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let host = null;
@@ -36,6 +46,9 @@
   let lastFrame = null;
   let infoTimer = null;
   let hiddenOnThisPage = false;
+  let hasSheet = false;
+  let nextBlinkAt = 0;
+  let blinkUntil = 0;
 
   function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -62,7 +75,21 @@
 
   const randomBetween = (min, max) => min + Math.random() * (max - min);
 
+  // bundled pixel fonts (assets/fonts); fonts declared inside a shadow root don't load in Chrome,
+  // so they're registered on the page under Lumio-only names (same as compass.js)
+  function loadLumioFonts() {
+    if (window.__lumioFontsLoaded) return;
+    window.__lumioFontsLoaded = true;
+    const fonts = [["Lumio Pixel", "press-start-2p.woff2"], ["Lumio Text", "vt323.woff2"]];
+    for (const [family, file] of fonts) {
+      const font = new FontFace(family, `url("${chrome.runtime.getURL(`assets/fonts/${file}`)}") format("woff2")`);
+      document.fonts.add(font);
+      font.load().catch(() => {}); // blocked by the page: the monospace fallback still works
+    }
+  }
+
   function createPet() {
+    loadLumioFonts();
     host = document.createElement("div");
     host.id = "lumio-pet-root";
     const shadow = host.attachShadow({ mode: "open" });
@@ -85,20 +112,20 @@
           height: ${PET_SIZE}px;
           cursor: pointer;
           will-change: transform;
-          font-family: ui-monospace, Menlo, Consolas, monospace;
+          font-family: 'Lumio Text', ui-monospace, Menlo, monospace;
         }
         .body {
           width: 100%;
           height: 100%;
           transform-origin: 50% 100%;
         }
-        .body img {
+        .sprite {
           width: 100%;
           height: 100%;
+          background-repeat: no-repeat;
+          background-size: 100% 100%; /* still image; sprite sheets set ${FRAME_COUNT}00% 100% */
           image-rendering: pixelated;
           filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.25));
-          pointer-events: none;
-          user-select: none;
         }
         .shadow {
           position: absolute;
@@ -124,7 +151,7 @@
           50% { transform: scaleY(0.95); }
         }
         .pet.mood-idle .body { animation-duration: 4s; }
-        .pet.mood-idle img { filter: grayscale(0.35) brightness(0.9) drop-shadow(2px 2px 0 rgba(0,0,0,0.25)); }
+        .pet.mood-idle .sprite { filter: grayscale(0.35) brightness(0.9) drop-shadow(2px 2px 0 rgba(0,0,0,0.25)); }
         .pet.mood-concerned:not(.walking) .body { animation: fidget 0.5s ease-in-out infinite; }
         @keyframes fidget {
           0%, 100% { transform: rotate(0deg); }
@@ -134,24 +161,23 @@
 
         .bubble, .info, .close {
           position: absolute;
-          background: #EAE6DB;
-          color: #3A2B20;
-          border: 2px solid #3A2B20;
-          box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+          background: #F6F1E6;
+          color: #2E2219;
+          border: 3px solid #2E2219;
+          border-radius: 4px;
+          box-shadow: 3px 3px 0 rgba(46, 34, 25, 0.25);
         }
         .bubble {
           bottom: ${PET_SIZE + 6}px;
           left: 50%;
           transform: translateX(-50%);
-          padding: 1px 6px;
-          font-size: 13px;
-          font-weight: bold;
-          border-radius: 8px;
+          padding: 0 7px;
+          font-size: 18px;
           white-space: nowrap;
           animation: float 2s ease-in-out infinite;
         }
         .bubble:empty { display: none; }
-        .pet.mood-concerned .bubble { color: #B55043; }
+        .pet.mood-concerned .bubble { color: #FFFFFF; background: #A3453A; }
         @keyframes float {
           0%, 100% { transform: translate(-50%, 0); }
           50% { transform: translate(-50%, -4px); }
@@ -160,25 +186,35 @@
         .info {
           bottom: ${PET_SIZE + 34}px;
           right: 0;
-          width: 190px;
-          padding: 8px 10px;
-          font-size: 12px;
-          line-height: 1.4;
-          border-radius: 6px;
+          width: 230px;
+          padding: 10px 12px;
+          font-size: 17px;
+          line-height: 1.15;
           cursor: default;
         }
         .info[hidden] { display: none; }
-        .info strong { display: block; margin-bottom: 2px; }
-        .info .hint { margin-top: 4px; color: #8B7355; }
+        .info strong {
+          display: block;
+          margin-bottom: 4px;
+          font: 8px/1.6 'Lumio Pixel', ui-monospace, monospace;
+          text-transform: uppercase;
+        }
+        .info .line {
+          margin-bottom: 8px;
+          padding-bottom: 8px;
+          font-size: 18px;
+          border-bottom: 2px dashed #C9BBA3;
+        }
+        .info .hint { margin-top: 6px; color: #6B5847; }
 
         .close {
           top: -6px;
           right: -6px;
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           padding: 0;
-          font: bold 12px/14px ui-monospace, Menlo, monospace;
-          border-radius: 50%;
+          font: 8px/14px 'Lumio Pixel', ui-monospace, monospace;
+          box-shadow: 2px 2px 0 #2E2219;
           cursor: pointer;
           display: none;
         }
@@ -199,6 +235,12 @@
         .pet.perched { bottom: 140px; }
         .pet.perched.flying { bottom: 160px; }
 
+        /* asleep: everyone rests on the ground and only breathes (flying characters land too) */
+        .pet.flying.mood-idle { bottom: 10px; }
+        .pet.perched.flying.mood-idle { bottom: 140px; }
+        .pet.flying.mood-idle .shadow { bottom: -4px; left: 14%; width: 72%; opacity: 1; }
+        .pet.flying.mood-idle .body { animation: breathe 4s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
           .pet .body, .bubble { animation: none !important; }
         }
@@ -207,15 +249,15 @@
         <div class="info" hidden></div>
         <div class="bubble"></div>
         <div class="shadow"></div>
-        <div class="body"><img alt=""></div>
-        <button class="close" title="Hide on this page">×</button>
+        <div class="body"><div class="sprite"></div></div>
+        <button class="close" title="Hide on this page">X</button>
       </div>`;
 
     const pet = shadow.querySelector(".pet");
     els = {
       pet,
       body: shadow.querySelector(".body"),
-      img: shadow.querySelector("img"),
+      sprite: shadow.querySelector(".sprite"),
       bubble: shadow.querySelector(".bubble"),
       info: shadow.querySelector(".info"),
       close: shadow.querySelector(".close")
@@ -249,12 +291,13 @@
       els.info.hidden = true;
       return;
     }
-    const { today, petName, mood } = state;
+    const { today, petName, mood, line } = state;
     els.info.innerHTML = `
+      ${line ? `<div class="line">"${escapeHtml(line)}"</div>` : ""}
       <strong>${escapeHtml(petName)} is ${escapeHtml(mood)}</strong>
-      Today: ${escapeHtml(formatMinutes(today.totalTimeMinutes))} with AI,
-      ${escapeHtml(today.sessionsToday)} session${today.sessionsToday === 1 ? "" : "s"},
-      ${escapeHtml(today.claimsToday)} claim${today.claimsToday === 1 ? "" : "s"} checked
+      Today: ${escapeHtml(formatMinutes(today.minutes))} with AI,
+      ${escapeHtml(today.sessions)} session${today.sessions === 1 ? "" : "s"},
+      ${escapeHtml(today.claims)} claim${today.claims === 1 ? "" : "s"} checked
       <div class="hint">Highlight text and right-click to check it with Compass.</div>`;
     els.info.hidden = false;
     clearTimeout(infoTimer);
@@ -267,9 +310,32 @@
     const flying = FLYING_CHARACTERS.has(state.character.id);
     els.pet.className = `pet mood-${mood}${flying ? " flying" : ""}`;
     els.bubble.textContent = MOODS[mood].bubble;
-    // character images are saved as "/assets/..." paths, which must be loaded from the extension
-    els.img.src = chrome.runtime.getURL(state.character.image.replace(/^\//, ""));
+    // sprite sheet if this character has one, otherwise its still image.
+    // paths are loaded from the extension (character images are saved as "/assets/..." paths)
+    hasSheet = SPRITE_SHEETS.has(state.character.id);
+    const path = hasSheet
+      ? `assets/companion/sprites/${state.character.id}-sheet.png`
+      : state.character.image.replace(/^\//, "");
+    els.sprite.style.backgroundImage = `url("${chrome.runtime.getURL(path)}")`;
+    els.sprite.style.backgroundSize = hasSheet ? `${FRAME_COUNT * 100}% 100%` : "100% 100%";
     els.pet.title = `${state.petName}: ${mood}`;
+  }
+
+  // which sprite frame to show right now
+  function pickFrame(now, walking, mood) {
+    if (mood === "idle") return FRAME.closed; // asleep
+    if (reducedMotion) return FRAME.open;
+    const flying = els.pet.classList.contains("flying");
+    if (walking || flying) {
+      const frameMs = walking ? WALK_FRAME_MS : HOVER_FRAME_MS;
+      return MOVE_CYCLE[Math.floor(now / frameMs) % MOVE_CYCLE.length];
+    }
+    // standing still: blink now and then
+    if (now >= nextBlinkAt) {
+      blinkUntil = now + BLINK_MS;
+      nextBlinkAt = now + randomBetween(...BLINK_EVERY_MS);
+    }
+    return now < blinkUntil ? FRAME.closed : FRAME.open;
   }
 
   // one animation frame: walk toward the target, pause, pick a new target
@@ -303,7 +369,11 @@
     els.pet.classList.toggle("perched", narrow);
     els.pet.style.transform = `translateX(${x}px)`;
     // the images face left; mirror them when walking right
-    els.img.style.transform = facing > 0 ? "scaleX(-1)" : "";
+    els.sprite.style.transform = facing > 0 ? "scaleX(-1)" : "";
+    if (hasSheet) {
+      const frame = pickFrame(now, walking, state?.mood);
+      els.sprite.style.backgroundPosition = `${(frame * 100) / (FRAME_COUNT - 1)}% 0`;
+    }
     requestAnimationFrame(step);
   }
 
