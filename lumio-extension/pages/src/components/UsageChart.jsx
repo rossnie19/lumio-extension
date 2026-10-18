@@ -1,12 +1,12 @@
 import React from 'react';
 
-// Updated ChatGPT color to match the red streak card
+// each platform gets its own colour from the theme (styles/theme.css)
 const PLATFORM_META = {
-  'chatgpt.com': { name: 'CHATGPT', color: '#B55043' }, // Red
-  'claude.ai': { name: 'CLAUDE', color: '#D98C4A' },    // Orange
-  'gemini.google.com': { name: 'GEMINI', color: '#2D4A3E' }, // Green
-  'perplexity.ai': { name: 'PERPLEXITY', color: '#B55043' }, 
-  'default': { name: 'OTHER', color: '#333333' }
+  'chatgpt.com': { name: 'CHATGPT', color: 'var(--red)' },
+  'claude.ai': { name: 'CLAUDE', color: 'var(--orange)' },
+  'gemini.google.com': { name: 'GEMINI', color: 'var(--green)' },
+  'perplexity.ai': { name: 'PERPLEXITY', color: 'var(--purple)' },
+  'default': { name: 'OTHER', color: 'var(--grey)' }
 };
 
 export default function UsageChart({ domainBreakdown = [], totalTime = 0 }) {
@@ -20,48 +20,36 @@ export default function UsageChart({ domainBreakdown = [], totalTime = 0 }) {
   topPlatforms.forEach((platform, index) => {
     const meta = PLATFORM_META[platform.domain] || PLATFORM_META['default'];
     const percentage = (platform.timeMinutes / totalTime) * 100;
-    
     gradientString += `${meta.color} ${cumulativePercentage}% ${cumulativePercentage + percentage}%`;
     if (index < topPlatforms.length - 1) gradientString += ', ';
-    
     cumulativePercentage += percentage;
   });
 
   if (cumulativePercentage < 100) {
-    gradientString += `, #3A2B20 ${cumulativePercentage}% 100%`;
+    // no leading comma when there are no platforms at all
+    gradientString += `${gradientString ? ', ' : ''}var(--ink) ${cumulativePercentage}% 100%`;
   }
 
   return (
-    <div className="card platform-card">
-      <h2 style={{ textAlign: 'left', color: '#3A2B20' }} className="section-title">MOST USED PLATFORM</h2>
-      
+    <section className="platform-card card">
+      <h2 className="section-title">MOST USED THIS MONTH</h2>
       <div className="platform-content">
-        <div 
-          className="pixel-pie-chart" 
-          style={{ background: `conic-gradient(${gradientString})` }}
-        ></div>
-
+        <div className="pixel-pie-chart" style={{ background: `conic-gradient(${gradientString})` }}></div>
         <div className="platform-list">
+          {topPlatforms.length === 0 && <span className="platform-empty">No platform data yet</span>}
           {topPlatforms.map((platform, index) => {
             const meta = PLATFORM_META[platform.domain] || PLATFORM_META['default'];
-            // Calculate the exact percentage for the tooltip
-            const displayPercentage = ((platform.timeMinutes / totalTime) * 100).toFixed(1) + '%';
-            
+            const percentage = Math.round((platform.timeMinutes / totalTime) * 100);
             return (
-              <div 
-                key={platform.domain} 
-                className="platform-rank-item" 
-                data-percentage={displayPercentage}
-              >
-                <span className="rank-number" style={{ color: meta.color }}>
-                  {index + 1}.
-                </span>
-                <span className="platform-name">{meta.name}</span>
+              <div key={platform.domain} className="platform-rank-item">
+                <span className="rank-dot" style={{ backgroundColor: meta.color }}></span>
+                <span className="platform-name">{index + 1}. {meta.name}</span>
+                <span className="platform-percent">{percentage}%</span>
               </div>
             );
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,0 +1,17 @@
+/* Bundled pixel fonts (both SIL Open Font License 1.1, from Google Fonts, Latin subset).
+   Loaded from the extension itself, so opening Lumio never contacts Google. */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('press-start-2p.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('vt323.woff2') format('woff2');
+}

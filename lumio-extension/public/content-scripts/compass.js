@@ -1,5 +1,42 @@
-// Function to create and inject the Compass retro sidebar
-function injectCompassSidebar(claimText, links = []) {
+// Escape text before putting it into innerHTML (the claim comes from page content)
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Titles/snippets from the search APIs can contain markup (<i>, <span>, &#039;...): keep only the text.
+// DOMParser builds an inert document, so nothing in it runs
+function htmlToText(html) {
+  return new DOMParser().parseFromString(String(html || ""), "text/html").body.textContent.trim();
+}
+
+// only allow normal web links in cards
+function safeUrl(url) {
+  return /^https?:\/\//i.test(url || "") ? url : "#";
+}
+
+// The pixel fonts ship with the extension (assets/fonts). Fonts declared inside a shadow root
+// don't load in Chrome, so they're registered on the page under Lumio-only names instead
+function loadLumioFonts() {
+  if (window.__lumioFontsLoaded) return;
+  window.__lumioFontsLoaded = true;
+  const fonts = [["Lumio Pixel", "press-start-2p.woff2"], ["Lumio Text", "vt323.woff2"]];
+  for (const [family, file] of fonts) {
+    const font = new FontFace(family, `url("${chrome.runtime.getURL(`assets/fonts/${file}`)}") format("woff2")`);
+    document.fonts.add(font);
+    font.load().catch(() => {}); // e.g. blocked by the page: the monospace fallback still works
+  }
+}
+
+// Function to create and inject the Compass retro sidebar.
+// it opens right away in a "searching" state; background.js sends the results when they're ready
+function injectCompassSidebar(claimText, requestId) {
+  loadLumioFonts();
+
   // 1. Remove existing sidebar if one is already open
   const existingSidebar = document.getElementById("lumio-compass-root");
   if (existingSidebar) {
@@ -13,72 +50,61 @@ function injectCompassSidebar(claimText, links = []) {
 
   // 3. Attach Shadow DOM (isolates our CSS)
   const shadow = host.attachShadow({ mode: "open" });
+  window.__lumioCompassSidebar = { shadow, requestId }; // results for an older request are ignored
 
-  // --- Change 4 (Part 1): Get path to PNG asset ---
+  // 4. Get path to PNG asset
   const logoUrl = chrome.runtime.getURL("assets/compass-logo.png");
-  const logoHTML = `<img src="${logoUrl}" class="header-logo" alt="Compass Logo" />`;
 
-  // 4. Fallback mock links
-  const displayLinks = links.length > 0 ? links : [
-    {
-      title: "Anxiety and depression amongst youth as adverse effects of using social media: A Review",
-      source: "PubMed Central (PMC) (.gov)",
-      url: "https://pubmed.ncbi.nlm.nih.gov/"
-    },
-    {
-      title: "The Impact of Social Media & Technology on Child and Adolescent Mental Health",
-      source: "PubMed Central (PMC) (.gov)",
-      url: "https://ncbi.nlm.nih.gov/"
-    },
-    {
-      title: "Does Social Media Use Cause Depression?",
-      source: "Child Mind Institute",
-      url: "https://childmind.org/"
-    }
-  ];
-
-// 5. Build HTML for reference cards with property fallbacks
-  const cardsHTML = displayLinks.map(link => {
-    const titleText = typeof link === 'string' ? link : (link.title || link.name || link.label || link.text || 'Reference Link');
-    const sourceText = typeof link === 'string' ? '' : (link.source || link.domain || link.site || link.publisher || link.url || '');
-
-    return `
-      <a href="${link.url || link.link || '#'}" target="_blank" class="compass-card">
-        <div class="card-title">${titleText}</div>
-        ${sourceText ? `<div class="card-source">${sourceText}</div>` : ''}
-      </a>
-    `;
-  }).join("");
+  const shortClaim = claimText.length > 90 ? claimText.substring(0, 90) + '...' : claimText;
 
   // 6. Inject HTML & CSS into Shadow Root
   shadow.innerHTML = `
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-
       :host {
         all: initial;
         position: fixed;
         top: 0;
         right: 0;
         width: 380px;
+        max-width: 100vw;
         height: 100vh;
-        z-index: 2147483647; 
-        font-family: 'VT323', monospace;
+        z-index: 2147483647;
         pointer-events: auto;
+        --page: #EAE3D2;
+        --paper: #F6F1E6;
+        --paper-sunk: #EFE7D6;
+        --ink: #2E2219;
+        --ink-soft: #6B5847;
+        --ink-faint: #9A8670;
+        --purple: #5E4B7E;
+        --green: #2F5144;
+        --red: #A3453A;
+        --gold: #F1BC4F;
+        --border: 3px solid var(--ink);
+        --shadow: 3px 3px 0 rgba(46, 34, 25, 0.22);
+        --radius: 4px;
+        --font-pixel: 'Lumio Pixel', monospace;
+        --font-text: 'Lumio Text', monospace;
+        font-family: var(--font-text);
+        font-size: 19px;
+        line-height: 1.15;
+        color: var(--ink);
       }
 
+      * { box-sizing: border-box; }
+
       .sidebar-container {
-        width: 100%;
-        height: 100%;
-        background-color: #EAE6DB; /* Retro cream background */
-        border-left: 5px solid #3A2B20;
-        box-sizing: border-box;
-        padding: 24px 20px;
         display: flex;
         flex-direction: column;
-        box-shadow: -8px 0px 20px rgba(0,0,0,0.3);
+        gap: 14px;
+        width: 100%;
+        height: 100%;
+        padding: 14px 16px 24px;
         overflow-y: auto;
-        animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background-color: var(--page);
+        border-left: 4px solid var(--ink);
+        box-shadow: -6px 0 18px rgba(0, 0, 0, 0.25);
+        animation: slideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1);
       }
 
       @keyframes slideIn {
@@ -86,115 +112,208 @@ function injectCompassSidebar(claimText, links = []) {
         to { transform: translateX(0); }
       }
 
-      .close-btn {
-        align-self: flex-end;
-        background: transparent;
-        border: none;
-        color: #8B0000;
-        font-family: 'Press Start 2P', cursive;
-        font-size: 1.4rem;
-        cursor: pointer;
-        margin-bottom: 8px; /* Slightly reduced margin */
-        transition: transform 0.1s ease;
+      .sidebar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
 
-      .close-btn:hover {
-        transform: scale(1.2);
-      }
-
-      /* --- Change 4 (Part 2): Logo Styling --- */
       .header-logo {
-        display: block;
-        margin: 0 auto 12px;
-        max-width: 150px;
-        image-rendering: pixelated; /* Keep retro crispness */
+        height: 34px;
+        width: auto;
+        image-rendering: pixelated;
       }
+
+      .close-btn {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        font-family: var(--font-pixel);
+        font-size: 10px;
+        color: var(--ink);
+        background-color: var(--paper);
+        border: var(--border);
+        border-radius: var(--radius);
+        box-shadow: 2px 2px 0 var(--ink);
+        cursor: pointer;
+      }
+
+      .close-btn:hover { background-color: var(--paper-sunk); }
+      .close-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
       .subtitle {
-        font-family: 'VT323', monospace;
-        font-size: 1.2rem;
-        color: #3A2B20;
-        text-align: center;
-        margin-bottom: 24px;
+        margin-top: -6px;
+        font-size: 18px;
+        color: var(--ink-soft);
       }
 
-      /* --- Change 5: New Claim Section Color (warmer tone) --- */
       .claim-preview {
-        background-color: #F0E0C5; 
-        border: 2px dashed #8B7355;
         padding: 10px 12px;
-        font-size: 1.1rem;
-        color: #2D1E18;
-        margin-bottom: 20px;
-        line-height: 1.2;
+        font-size: 19px;
+        background-color: var(--paper);
+        border: 2px dashed var(--ink-faint);
+        border-radius: var(--radius);
+      }
+
+      .claim-preview strong,
+      .search-info strong {
+        font-weight: normal;
+        color: var(--ink-soft);
+      }
+
+      .search-info {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+
+      .tag {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 1px 6px;
+        font-size: 15px;
+        color: #FFFFFF;
+        background-color: var(--purple);
+        border-radius: var(--radius);
+        vertical-align: 1px;
+      }
+
+      .tag.plain { background-color: var(--ink-soft); }
+
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 14px 0 8px;
+        font-family: var(--font-pixel);
+        font-size: 8px;
+      }
+
+      .section-label::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background-color: var(--gold);
+        box-shadow: 1px 1px 0 var(--ink);
       }
 
       .cards-list {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
       }
 
       .compass-card {
         display: block;
-        background-color: #D6C5AD;
-        border: 3px solid #8B7355;
-        border-radius: 12px;
-        padding: 12px 14px;
+        padding: 10px 12px;
         text-decoration: none;
-        box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-        transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        color: var(--ink);
+        background-color: var(--paper);
+        border: var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
       }
 
-      /* --- Changes 1 & 2: Float up + Darker Shade on Hover --- */
       .compass-card:hover {
-        transform: translateY(-5px); /* Float up vertically */
-        background-color: #BCA78D; /* Slightly darker than base #D6C5AD */
-        box-shadow: 4px 9px 0px rgba(0,0,0,0.15); /* Expand shadow to emphasize float */
+        transform: translate(-1px, -2px);
+        box-shadow: 4px 5px 0 rgba(46, 34, 25, 0.25);
       }
 
-      /* --- Change 3: Click Animation (Toggle press effect) --- */
       .compass-card:active {
-        transform: translateY(-2px) scale(0.97); /* "Press down" slightly */
-        box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-        transition: transform 0.05s ease; /* Fast click response */
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 rgba(46, 34, 25, 0.25);
+      }
+
+      .compass-card:focus-visible,
+      .more-links a:focus-visible,
+      .close-btn:focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 2px;
       }
 
       .card-title {
-        font-family: 'VT323', monospace;
-        font-size: 1.25rem;
-        color: #2B1D14;
-        line-height: 1.1;
-        margin-bottom: 4px; /* Reduced space before font shift */
+        margin-bottom: 4px;
+        font-size: 20px;
+        line-height: 1.05;
       }
 
-      /* --- Change 6: Change Source font to VT323 (matched to title) --- */
+      .card-meta {
+        margin-bottom: 4px;
+        font-size: 17px;
+        color: var(--ink-soft);
+      }
+
       .card-source {
-        font-family: 'VT323', monospace; /* Aligned with title font */
-        font-size: 0.85rem; /* Increased size since VT323 is taller/lighter */
-        color: #6D5A88;
-        letter-spacing: 1px;
-        display: block;
+        font-size: 16px;
+        color: var(--purple);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
+
+      .status {
+        padding: 8px 0;
+        font-size: 19px;
+        color: var(--ink-soft);
+      }
+
+      .status.loading::after {
+        content: "";
+        animation: dots 1.2s steps(4, end) infinite;
+      }
+
+      @keyframes dots {
+        0% { content: ""; }
+        25% { content: "."; }
+        50% { content: ".."; }
+        75% { content: "..."; }
+      }
+
+      .note {
+        margin-top: 6px;
+        font-size: 16px;
+        color: var(--ink-faint);
+      }
+
+      .more-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .more-links a {
+        padding: 3px 9px;
+        font-size: 17px;
+        color: var(--ink);
+        text-decoration: none;
+        background-color: var(--paper);
+        border: 2px solid var(--ink);
+        border-radius: var(--radius);
+      }
+
+      .more-links a:hover { background-color: var(--gold); }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sidebar-container, .status.loading::after { animation: none; }
+        .compass-card { transition: none; }
+      }
     </style>
 
     <div class="sidebar-container">
-      <button class="close-btn" id="close-compass">✖</button>
-      
-      <!-- --- Change 4 (Part 3): Render PNG Logo --- -->
-      <img src="${logoUrl}" class="header-logo" alt="Compass Logo">
-      
-      <div class="subtitle">Verify claims with references</div>
+      <div class="sidebar-top">
+        <img src="${logoUrl}" class="header-logo" alt="Compass">
+        <button class="close-btn" id="close-compass" title="Close">X</button>
+      </div>
+      <div class="subtitle">Check claims with real research</div>
 
       <div class="claim-preview">
-        <strong>Claim:</strong> "${claimText.length > 90 ? claimText.substring(0, 90) + '...' : claimText}"
+        <strong>Claim:</strong> "${escapeHtml(shortClaim)}"
       </div>
 
-      <div class="cards-list">
-        ${cardsHTML}
+      <div id="compass-results">
+        <div class="status loading">Searching for sources</div>
       </div>
     </div>
   `;
@@ -205,9 +324,74 @@ function injectCompassSidebar(claimText, links = []) {
   });
 }
 
-// Listen for background script event
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "openCompass") {
-    injectCompassSidebar(request.text, request.links);
-  }
-});
+// Fill the open sidebar with the search results from background.js
+function showCompassResults(data) {
+  const sidebar = window.__lumioCompassSidebar;
+  if (!sidebar || sidebar.requestId !== data.requestId) return; // sidebar closed or a newer claim opened
+  const container = sidebar.shadow.getElementById("compass-results");
+  if (!container) return;
+
+  const searchInfo = `
+    ${data.usedAI ? `<div class="search-info"><strong>Checking:</strong> ${escapeHtml(data.claim)}</div>` : ""}
+    <div class="search-info">
+      <strong>Searched for:</strong> ${escapeHtml(data.query)}
+      ${data.usedAI
+        ? '<span class="tag" title="Rewritten by Chrome\'s built-in AI on this computer">on-device AI</span>'
+        : '<span class="tag plain" title="On-device AI not available, filler words removed">keywords</span>'}
+    </div>`;
+
+  const paperCards = data.papers.map(paper => {
+    const meta = [htmlToText(paper.authors), paper.year].filter(Boolean).join(" · ");
+    return `
+      <a href="${escapeHtml(safeUrl(paper.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
+        <div class="card-title">${escapeHtml(htmlToText(paper.title))}</div>
+        ${meta ? `<div class="card-meta">${escapeHtml(meta)}</div>` : ""}
+        <div class="card-source">${escapeHtml([htmlToText(paper.venue), paper.source].filter(Boolean).join(" · "))}</div>
+      </a>`;
+  }).join("");
+
+  const papersSection = data.papers.length
+    ? `<div class="section-label">RESEARCH PAPERS</div><div class="cards-list">${paperCards}</div>`
+    : `<div class="status">No matching papers found. Try the searches below.</div>`;
+
+  const wiki = data.wikipedia;
+  const wikiSection = wiki ? `
+    <div class="section-label">BACKGROUND</div>
+    <a href="${escapeHtml(safeUrl(wiki.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
+      <div class="card-title">${escapeHtml(htmlToText(wiki.title))}</div>
+      <div class="card-meta">${escapeHtml(htmlToText(wiki.snippet))}...</div>
+      <div class="card-source">Wikipedia</div>
+    </a>
+    <div class="note">A starting point, not proof: check its cited sources.</div>` : "";
+
+  const failedNote = data.failedSources.length
+    ? `<div class="note">Couldn't reach: ${escapeHtml(data.failedSources.join(", "))}</div>`
+    : "";
+
+  const moreLinks = data.links.map(link =>
+    `<a href="${escapeHtml(safeUrl(link.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.title)}</a>`
+  ).join("");
+
+  container.innerHTML = `
+    ${searchInfo}
+    ${papersSection}
+    ${failedNote}
+    ${wikiSection}
+    <div class="section-label">SEARCH MORE ON</div>
+    <div class="more-links">${moreLinks}</div>`;
+}
+
+// Listen for background script events.
+// background.js injects this file on demand, possibly more than once per page, so only register once
+if (!window.__lumioCompassLoaded) {
+  window.__lumioCompassLoaded = true;
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "openCompass") {
+      injectCompassSidebar(request.text, request.requestId);
+      sendResponse({ opened: true }); // lets background.js know the sidebar really opened
+    } else if (request.action === "compassResults") {
+      showCompassResults(request);
+    }
+  });
+}

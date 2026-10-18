@@ -1,32 +1,24 @@
 import React from 'react';
 
 export default function CompassStats({ stats }) {
-    if (!stats) return <div>Loading Compass...</div>;
-    
   return (
-    <div className="compass-stats-container">
-      {/* Replaced C🧭mpass text with PNG Logo */}
-      <div className="compass-logo-container">
-        <img src="/assets/compass-logo.png" alt="Compass Stats" className="compass-logo" />
-      </div>
-      
-      {/* The 3 Columns */}
-      <div className="compass-row">
-        <div className="compass-col">
+    <section className="compass-stats-container">
+      <img src="/assets/compass-logo.png" alt="Compass" className="compass-logo" />
+      <div className="tiles three">
+        <div className="tile stat-card">
           <div className="compass-number">{stats.today}</div>
-          <div className="compass-label">CLAIMS<br/>VERIFIED<br/>TODAY</div>
+          <div className="tile-label">CHECKED TODAY</div>
         </div>
-        
-        <div className="compass-col">
+        <div className="tile stat-card">
           <div className="compass-number">{stats.week}</div>
-          <div className="compass-label">CLAIMS<br/>VERIFIED<br/>THIS WEEK</div>
+          <div className="tile-label">THIS WEEK</div>
         </div>
-        
-        <div className="compass-col">
-          <div className="compass-number">{stats.rate}%</div>
-          <div className="compass-label">CROSS-<br/>REFERENCING<br/>RATE</div>
+        <div className="tile stat-card" title="Claims checked this week ÷ AI sessions this week">
+          {/* rate is null when there were no AI sessions this week */}
+          <div className="compass-number">{stats.rate == null ? '—' : `${stats.rate}%`}</div>
+          <div className="tile-label">CROSS-CHECK RATE</div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

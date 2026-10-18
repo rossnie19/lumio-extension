@@ -1,25 +1,29 @@
 import { SESSION_CONFIG } from "./constants.js";
 import { getData } from "./storage.js";
 
-// Determine current companion mood: curious, focused, concerned, or resting
+// the only mood values getCompanionMood() returns
+export const MOODS = ["curious", "focused", "concerned", "idle"];
+
+// Determine current companion mood: curious, focused, concerned, or idle
 export async function getCompanionMood() {
   const lastCompassUse = await getData("lastCompassUse");
-  const lastActivity = await getData("lastActivityTime");
+  const lastAIView = await getData("lastAIViewTime"); // last time an AI tab was looked at (background.js)
   const session = await getData("currentSession");
   const now = Date.now();
 
-  // focused: Compass was used very recently (within last 2 minutes)
-  if (lastCompassUse && now - lastCompassUse < 2 * 60 * 1000) {
+  // focused: Compass was used very recently
+  if (lastCompassUse && now - lastCompassUse < SESSION_CONFIG.focusedMinutes * 60 * 1000) {
     return "focused";
   }
 
-  // resting: no activity within the resting threshold
-  if (!lastActivity || now - lastActivity > SESSION_CONFIG.restingMinutes * 60 * 1000) {
-    return "resting";
+  // idle: haven't looked at an AI tab for a while
+  if (!lastAIView || now - lastAIView > SESSION_CONFIG.idleMinutes * 60 * 1000) {
+    return "idle";
   }
 
-  // concerned: current session's active time exceeds the threshold
-  if (session && session.activeMs > SESSION_CONFIG.concernedSessionMinutes * 60 * 1000) {
+  // concerned: the session is still going (no break longer than the gap) and has run too long
+  const sessionStillActive = now - lastAIView <= SESSION_CONFIG.gapThresholdMinutes * 60 * 1000;
+  if (sessionStillActive && session && session.activeMs > SESSION_CONFIG.concernedSessionMinutes * 60 * 1000) {
     return "concerned";
   }
 
