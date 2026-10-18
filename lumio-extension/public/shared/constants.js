@@ -8,10 +8,18 @@ export const AI_DOMAINS = [
 
 //computation of how many minutes will determine the mood of the companion
 export const SESSION_CONFIG = {
+    focusedMinutes: 5, //mood stays "focused" this long after checking a claim with Compass
     gapThresholdMinutes: 5, //gap before a session is considered "ended"
+    awayGraceMinutes: 5, //time keeps counting this long after you last looked at an AI tab, then stops
     concernedSessionMinutes: 45, //continuous active time before mood = concerned
-    restingMinutes: 30 //no activity at all before mood = resting
+    idleMinutes: 30 //minutes without looking at an AI tab before mood = idle
 }
+
+//pet name shown until the user picks one (popup and dashboard)
+export const DEFAULT_PET_NAME = "PET NAME";
+
+//character shown until the user picks one in the dashboard
+export const DEFAULT_CHARACTER = { id: "mangkukulam", name: "MANGKUKULAM", image: "/assets/companion/mangkukulam.png" };
 
 //gagamitin ni shanne:
 //trusted sources na gagamitin sa compass

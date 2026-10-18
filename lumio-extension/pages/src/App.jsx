@@ -1,189 +1,159 @@
 import React, { useEffect, useState } from 'react';
 import Companion from './components/Companion';
 import UsageChart from './components/UsageChart';
-import ReflectionLog from './components/ReflectionLog';
 import CharacterSelector from './components/CharacterSelector';
 import MonthlyOverview from './components/MonthlyOverview';
 import WeeklyOverview from './components/WeeklyOverview';
 import CompassStats from './components/CompassStats';
-import { mockData, mockDataSets } from './mockData';
+import CompassAISetup from './components/CompassAISetup';
 import { getCompanionMood, normalizeMood } from '../../public/shared/companionState.js';
-import { todayKey } from '../../public/shared/storage.js';
+import { getHistory, LIVE_STAT_KEYS } from '../../public/shared/storage.js';
+import { buildLiveView } from '../../public/shared/stats.js';
+import { DEFAULT_PET_NAME, DEFAULT_CHARACTER } from '../../public/shared/constants.js';
 import './styles/dashboard.css';
 
+const hasChromeStorage = () => typeof chrome !== 'undefined' && chrome.storage;
+
 export default function App() {
-  // Moods are always lowercase (see MOODS in companionState.js)
   const [mood, setMood] = useState("curious");
-  const [petName, setPetName] = useState("PET NAME");
+  const [history, setHistory] = useState({}); // dailyHistory from storage.js
+  const [petName, setPetName] = useState(DEFAULT_PET_NAME);
   const [age, setAge] = useState(1);
-  const [verifiedCount, setVerifiedCount] = useState(mockDataSets.curious.compassStats.today);
-  
-  const [activeCharacter, setActiveCharacter] = useState({ 
-    id: 'mangkukulam', 
-    name: 'MANGKUKULAM',
-    image: '/assets/companion/mangkukulam.png'
-  });
+  const [showPet, setShowPet] = useState(true); // walking pet on AI sites (content-scripts/pet.js)
+
+  const [activeCharacter, setActiveCharacter] = useState(DEFAULT_CHARACTER);
 
   useEffect(() => {
+    if (!hasChromeStorage()) return; // e.g. running in vite dev outside the extension
+
+    // real numbers, recorded by background.js
+    async function loadLiveData() {
+      try {
+        setMood(normalizeMood(await getCompanionMood()));
+        setHistory(await getHistory());
+      } catch (err) {
+        console.log("Could not load live data:", err);
+      }
+    }
+
     async function loadDashboardData() {
       try {
-        const currentMood = await getCompanionMood();
-        if (currentMood) setMood(normalizeMood(currentMood));
+        // Load Age, Name and Active Character from Chrome Storage
+        const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'showPetOnAISites']);
+        if (data.petName) setPetName(data.petName);
+        if (data.activeCharacter) setActiveCharacter(data.activeCharacter);
+        setShowPet(data.showPetOnAISites !== false);
 
-        // Load Age, Name, AND Active Character from Chrome Storage
-        if (typeof chrome !== 'undefined' && chrome.storage) {
-          const data = await chrome.storage.local.get(['installDate', 'petName', 'activeCharacter', 'verifiedClaimsCount', 'demoMood']);
-          if (data.demoMood) setMood(normalizeMood(data.demoMood));
-          
-          if (data.petName) setPetName(data.petName);
-          if (data.activeCharacter) setActiveCharacter(data.activeCharacter);
-
-          if (data.verifiedClaimsCount !== undefined) setVerifiedCount(data.verifiedClaimsCount);
-
-          if (data.installDate) {
-            const msPerDay = 1000 * 60 * 60 * 24;
-            const daysActive = Math.floor((Date.now() - data.installDate) / msPerDay);
-            setAge(daysActive > 0 ? daysActive : 1); 
-          } else {
-            await chrome.storage.local.set({ installDate: Date.now() });
-            setAge(1);
-          }
+        // installDate is saved by background.js on install; older installs get it the first time here
+        let installDate = data.installDate;
+        if (!installDate) {
+          installDate = Date.now();
+          await chrome.storage.local.set({ installDate });
         }
+        // install day = day 1, the next day = day 2, ...
+        const msPerDay = 1000 * 60 * 60 * 24;
+        setAge(Math.floor((Date.now() - installDate) / msPerDay) + 1);
       } catch (err) {
-        console.log("Using mockData fallback:", err);
+        console.log("Could not load dashboard data:", err);
       }
+      await loadLiveData();
     }
     loadDashboardData();
 
+    // Instantly update the dashboard whenever the tracked stats change, without refreshing!
     const handleStorageChange = (changes, namespace) => {
-      if (namespace === 'local' && changes.verifiedClaimsCount) {
-        // Instantly update the dashboard number without refreshing!
-        setVerifiedCount(changes.verifiedClaimsCount.newValue); 
+      if (namespace === 'local' && LIVE_STAT_KEYS.some(key => key in changes)) {
+        loadLiveData();
       }
     };
+    chrome.storage.onChanged.addListener(handleStorageChange);
 
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.onChanged.addListener(handleStorageChange);
-    }
+    // the mood also changes just because time passes (focused wears off, idle kicks in), so re-check regularly
+    const moodTimer = setInterval(loadLiveData, 30 * 1000);
 
-    // Cleanup listener when the dashboard is closed
+    // Cleanup listener and timer when the dashboard is closed
     return () => {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.onChanged.removeListener(handleStorageChange);
-      }
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+      clearInterval(moodTimer);
     };
   }, []);
 
   const handleCharacterSelect = (character) => {
     setActiveCharacter(character);
     // Save the selected character to storage!
-    if (typeof chrome !== 'undefined' && chrome.storage) {
+    if (hasChromeStorage()) {
       chrome.storage.local.set({ activeCharacter: character });
     }
   };
 
   const handleNameSave = (newName) => {
     setPetName(newName);
-    if (typeof chrome !== 'undefined' && chrome.storage) {
+    if (hasChromeStorage()) {
       chrome.storage.local.set({ petName: newName });
     }
   };
 
-  const handleMoodOverride = (e) => {
-    const newMood = e.target.value;
-    setMood(newMood); 
-
-    const currentData = mockDataSets[newMood];
-    setVerifiedCount(currentData.compassStats.today);
-
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ 
-        demoMood: newMood,
-        verifiedClaimsCount: currentData.compassStats.today,
-        totalTimeMinutes: currentData.totalTimeMinutes, // <-- NEW
-        sessionsToday: currentData.sessionsToday,       // <-- NEW
-        statsDate: todayKey() // so the popup treats these demo numbers as today's
-      });
+  const handleShowPetChange = (e) => {
+    setShowPet(e.target.checked);
+    if (hasChromeStorage()) {
+      chrome.storage.local.set({ showPetOnAISites: e.target.checked });
     }
   };
 
-  const currentData = mockDataSets[mood] || mockDataSets.curious;
+  const view = buildLiveView(history); // definitions of week/rate/streak/coins are in stats.js
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-logo-container">
         <img src="/assets/lumio-logo.png" alt="Lumio Dashboard" className="dashboard-logo" />
       </div>
-      
+
       <div className="dashboard-grid">
-        
+
         {/* COLUMN 1 */}
         <div className="column">
-          <WeeklyOverview weeklyData={currentData.weeklyActivity} />
-
-          <CompassStats 
-            stats={{
-              ...currentData.compassStats, 
-              today: verifiedCount // Keep this as verifiedCount so live clicks still work!
-            }} 
-          />
+          <WeeklyOverview weeklyData={view.weeklyActivity} />
+          <CompassStats stats={view.compassStats} />
+          <CompassAISetup />
         </div>
 
         {/* COLUMN 2 */}
         <div className="column">
-          <MonthlyOverview 
-            totalTime={currentData.totalTimeMinutes} 
-            sessions={currentData.sessionsToday} 
-            verifiedCount={34 + verifiedCount} 
-            streak={6}
+          <MonthlyOverview
+            totalTime={view.monthlyMinutes}
+            sessions={view.monthlySessions}
+            claimsCount={view.monthlyClaims}
+            streak={view.streak}
           />
-          <UsageChart 
-            domainBreakdown={currentData.domainBreakdown} 
-            totalTime={currentData.totalTimeMinutes} 
+          <UsageChart
+            domainBreakdown={view.domainBreakdown}
+            totalTime={view.platformTotalMinutes}
           />
         </div>
 
         {/* COLUMN 3: The Companion & Selector */}
         <div className="column">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 className="section-title" style={{ margin: '0', color: '#6D5A88', textAlign: 'left' }}>
-              COMPANION
-            </h2>
-            
-            {/* The Demo Override Dropdown */}
-            <select 
-              value={mood} 
-              onChange={handleMoodOverride}
-              style={{ 
-                fontFamily: '"Press Start 2P", cursive', 
-                fontSize: '10px', 
-                padding: '4px', 
-                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                border: '2px dashed #6D5A88', 
-                color: '#6D5A88', 
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              <option value="curious">Curious</option>
-              <option value="focused">Focused</option>
-              <option value="idle">Idle</option>
-              <option value="concerned">Concerned</option>
-            </select>
-          </div>
-          
-          <Companion 
-            mood={mood} 
-            characterName={activeCharacter.name} 
+          <h2 className="section-title" style={{ margin: '0 0 16px 0', color: '#6D5A88', textAlign: 'left' }}>
+            COMPANION
+          </h2>
+
+          <Companion
+            mood={mood}
+            characterName={activeCharacter.name}
             characterImage={activeCharacter.image}
             petName={petName}
             age={age}
-            onNameChange={handleNameSave} 
+            onNameChange={handleNameSave}
           />
-          
-          <CharacterSelector onSelect={handleCharacterSelect} />
+
+          <CharacterSelector activeId={activeCharacter.id} onSelect={handleCharacterSelect} />
+
+          <label className="pet-toggle">
+            <input type="checkbox" checked={showPet} onChange={handleShowPetChange} />
+            SHOW PET ON AI SITES
+          </label>
         </div>
-        
+
       </div>
     </div>
   );

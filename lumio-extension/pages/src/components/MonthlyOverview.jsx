@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function MonthlyOverview({ totalTime, sessions, verifiedCount, streak = 6 }) {
+export default function MonthlyOverview({ totalTime, sessions, claimsCount, streak }) {
   // Convert minutes to hours and mins
   const hours = Math.floor(totalTime / 60);
   const mins = totalTime % 60;
@@ -13,8 +13,8 @@ export default function MonthlyOverview({ totalTime, sessions, verifiedCount, st
       
       <div className="stats-grid">
         <div className="stat-block bg-green">
-          <h3 style={{ fontSize: '0.8rem', color: '#A9D6A3' }}>Claims Verified</h3>
-          <div className="stat-value">{verifiedCount}</div>
+          <h3 style={{ fontSize: '0.8rem', color: '#A9D6A3' }}>Claims Checked</h3>
+          <div className="stat-value">{claimsCount}</div>
         </div>
         
         <div className="stat-block bg-orange">
@@ -24,7 +24,7 @@ export default function MonthlyOverview({ totalTime, sessions, verifiedCount, st
         
         <div className="stat-block bg-red">
           <h3 style={{ fontSize: '0.8rem', color: '#FFC9C9' }}>Current Streak</h3>
-          <div className="stat-value">{streak}<br/><span style={{fontSize: '0.8rem'}}>Days</span></div>
+          <div className="stat-value">{streak ?? '—'}<br/><span style={{fontSize: '0.8rem'}}>Days</span></div>
         </div>
         
         <div className="stat-block bg-purple">

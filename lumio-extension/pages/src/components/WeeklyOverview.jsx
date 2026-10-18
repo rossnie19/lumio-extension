@@ -10,14 +10,12 @@ export default function WeeklyOverview({ weeklyData = [] }) {
       
       <div className="weekly-grid">
         {weeklyData.map((dayData, index) => {
-          // Each coin represents 2 hours!
-          const hoursActive = dayData.score * 2; 
-          
+          // rows come from buildWeekRows in stats.js (1 coin = 30 min, max 6)
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="weekly-row"
-              data-tooltip={`${hoursActive} Hours Active`} 
+              data-tooltip={dayData.tooltip}
             >
               <span className="day-label">{dayData.day}</span>
               

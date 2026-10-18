@@ -28,27 +28,29 @@
         "alarms",
         "activeTab"
     ],
-    "host_permissions": [
-        "https://chatgpt.com/*",
-        "https://claude.ai/*",
-        "https://gemini.google.com/*",
-        "https://perplexity.ai/*",
-        "https://www.perplexity.ai/*"
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "assets/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
     ],
     "content_scripts": [
         {
             "matches": [
-                "<all_urls>"
+                "https://chatgpt.com/*",
+                "https://claude.ai/*",
+                "https://gemini.google.com/*",
+                "https://perplexity.ai/*",
+                "https://www.perplexity.ai/*"
             ],
             "js": [
-                "content-scripts/compass.js"
-            ]
+                "content-scripts/pet.js"
+            ],
+            "run_at": "document_idle"
         }
-    ],
-    "web_accessible_resources": [
-    {
-        "resources": [ "assets/*" ],
-        "matches": [ "<all_urls>" ]
-    }
     ]
 }

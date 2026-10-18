@@ -65,7 +65,10 @@ export default function Companion({
                 </h2>
                 <span 
                   style={{ cursor: 'pointer', fontSize: '1.2rem', transition: 'transform 0.1s' }} 
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setTempName(petName); // start from the saved name (it loads after this component mounts)
+                    setIsEditing(true);
+                  }}
                   title="Edit Name"
                 >
                   ✏️

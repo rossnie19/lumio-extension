@@ -507,3 +507,44 @@ h1, h2, h3, .section-title, .selector-title {
   border: 2px solid #31263E; /* Turns into a solid line when typing */
   background-color: rgba(255, 255, 255, 0.4); /* Gets a bit brighter */
 }
+/* --- COMPASS AI STATUS (under the compass stats) --- */
+.compass-ai-setup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 1.1rem;
+  color: #5A4534;
+  border-top: 3px dashed #8B7355;
+  padding-top: 12px;
+}
+
+.compass-ai-label {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.6rem;
+  color: #3A2B20;
+}
+
+.compass-ai-setup .select-btn {
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+/* --- WALKING PET TOGGLE (under the character selector) --- */
+.pet-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.6rem;
+  color: #5A4534;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pet-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #6D5A88;
+  cursor: pointer;
+}

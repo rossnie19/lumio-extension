@@ -14,16 +14,17 @@ export default function CompassStats({ stats }) {
       <div className="compass-row">
         <div className="compass-col">
           <div className="compass-number">{stats.today}</div>
-          <div className="compass-label">CLAIMS<br/>VERIFIED<br/>TODAY</div>
+          <div className="compass-label">CLAIMS<br/>CHECKED<br/>TODAY</div>
         </div>
         
         <div className="compass-col">
-          <div className="compass-number">{stats.week}</div>
-          <div className="compass-label">CLAIMS<br/>VERIFIED<br/>THIS WEEK</div>
+          {/* null = not tracked yet */}
+          <div className="compass-number">{stats.week ?? '—'}</div>
+          <div className="compass-label">CLAIMS<br/>CHECKED<br/>THIS WEEK</div>
         </div>
         
         <div className="compass-col">
-          <div className="compass-number">{stats.rate}%</div>
+          <div className="compass-number">{stats.rate == null ? '—' : `${stats.rate}%`}</div>
           <div className="compass-label">CROSS-<br/>REFERENCING<br/>RATE</div>
         </div>
       </div>

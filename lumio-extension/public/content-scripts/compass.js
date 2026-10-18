@@ -8,8 +8,20 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
-// Function to create and inject the Compass retro sidebar
-function injectCompassSidebar(claimText, links = []) {
+// Titles/snippets from the search APIs can contain markup (<i>, <span>, &#039;...): keep only the text.
+// DOMParser builds an inert document, so nothing in it runs
+function htmlToText(html) {
+  return new DOMParser().parseFromString(String(html || ""), "text/html").body.textContent.trim();
+}
+
+// only allow normal web links in cards
+function safeUrl(url) {
+  return /^https?:\/\//i.test(url || "") ? url : "#";
+}
+
+// Function to create and inject the Compass retro sidebar.
+// it opens right away in a "searching" state; background.js sends the results when they're ready
+function injectCompassSidebar(claimText, requestId) {
   // 1. Remove existing sidebar if one is already open
   const existingSidebar = document.getElementById("lumio-compass-root");
   if (existingSidebar) {
@@ -23,37 +35,10 @@ function injectCompassSidebar(claimText, links = []) {
 
   // 3. Attach Shadow DOM (isolates our CSS)
   const shadow = host.attachShadow({ mode: "open" });
+  window.__lumioCompassSidebar = { shadow, requestId }; // results for an older request are ignored
 
-  // --- Change 4 (Part 1): Get path to PNG asset ---
+  // 4. Get path to PNG asset
   const logoUrl = chrome.runtime.getURL("assets/compass-logo.png");
-  const logoHTML = `<img src="${logoUrl}" class="header-logo" alt="Compass Logo" />`;
-
-  // 4. Fallback mock links
-  const displayLinks = links.length > 0 ? links : [
-    {
-      title: "Anxiety and depression amongst youth as adverse effects of using social media: A Review",
-      source: "PubMed Central (PMC) (.gov)",
-      url: "https://pubmed.ncbi.nlm.nih.gov/"
-    },
-    {
-      title: "The Impact of Social Media & Technology on Child and Adolescent Mental Health",
-      source: "PubMed Central (PMC) (.gov)",
-      url: "https://ncbi.nlm.nih.gov/"
-    },
-    {
-      title: "Does Social Media Use Cause Depression?",
-      source: "Child Mind Institute",
-      url: "https://childmind.org/"
-    }
-  ];
-
-  // 5. Build HTML for reference cards (links are { title, source, url } from generateValidSources)
-  const cardsHTML = displayLinks.map(link => `
-      <a href="${escapeHtml(link.url || '#')}" target="_blank" rel="noopener noreferrer" class="compass-card">
-        <div class="card-title">${escapeHtml(link.title || 'Reference Link')}</div>
-        ${link.source ? `<div class="card-source">${escapeHtml(link.source)}</div>` : ''}
-      </a>
-    `).join("");
 
   const shortClaim = claimText.length > 90 ? claimText.substring(0, 90) + '...' : claimText;
 
@@ -186,6 +171,81 @@ function injectCompassSidebar(claimText, links = []) {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+
+      .card-meta {
+        font-size: 1rem;
+        color: #5A4534;
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+
+      .section-label {
+        font-family: 'Press Start 2P', cursive;
+        font-size: 0.6rem;
+        color: #3A2B20;
+        margin: 18px 0 10px;
+      }
+
+      .search-info {
+        font-size: 1.05rem;
+        color: #3A2B20;
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
+
+      .tag {
+        display: inline-block;
+        font-size: 0.85rem;
+        color: #FFFFFF;
+        background-color: #6D5A88;
+        padding: 0 6px;
+        margin-left: 4px;
+        border-radius: 4px;
+      }
+
+      .tag.plain { background-color: #8B7355; }
+
+      .status {
+        font-size: 1.2rem;
+        color: #5A4534;
+        padding: 12px 0;
+      }
+
+      .status.loading::after {
+        content: "";
+        animation: dots 1.2s steps(4, end) infinite;
+      }
+
+      @keyframes dots {
+        0% { content: ""; }
+        25% { content: "."; }
+        50% { content: ".."; }
+        75% { content: "..."; }
+      }
+
+      .note {
+        font-size: 0.95rem;
+        color: #8B7355;
+        margin-top: 4px;
+      }
+
+      .more-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .more-links a {
+        font-size: 1rem;
+        color: #3A2B20;
+        background-color: #F0E0C5;
+        border: 2px solid #8B7355;
+        border-radius: 8px;
+        padding: 2px 8px;
+        text-decoration: none;
+      }
+
+      .more-links a:hover { background-color: #D6C5AD; }
     </style>
 
     <div class="sidebar-container">
@@ -194,14 +254,14 @@ function injectCompassSidebar(claimText, links = []) {
       <!-- --- Change 4 (Part 3): Render PNG Logo --- -->
       <img src="${logoUrl}" class="header-logo" alt="Compass Logo">
       
-      <div class="subtitle">Verify claims with references</div>
+      <div class="subtitle">Check claims with references</div>
 
       <div class="claim-preview">
         <strong>Claim:</strong> "${escapeHtml(shortClaim)}"
       </div>
 
-      <div class="cards-list">
-        ${cardsHTML}
+      <div id="compass-results">
+        <div class="status loading">Searching for sources</div>
       </div>
     </div>
   `;
@@ -212,9 +272,74 @@ function injectCompassSidebar(claimText, links = []) {
   });
 }
 
-// Listen for background script event
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "openCompass") {
-    injectCompassSidebar(request.text, request.links);
-  }
-});
+// Fill the open sidebar with the search results from background.js
+function showCompassResults(data) {
+  const sidebar = window.__lumioCompassSidebar;
+  if (!sidebar || sidebar.requestId !== data.requestId) return; // sidebar closed or a newer claim opened
+  const container = sidebar.shadow.getElementById("compass-results");
+  if (!container) return;
+
+  const searchInfo = `
+    ${data.usedAI ? `<div class="search-info"><strong>Checking:</strong> ${escapeHtml(data.claim)}</div>` : ""}
+    <div class="search-info">
+      <strong>Searched for:</strong> ${escapeHtml(data.query)}
+      ${data.usedAI
+        ? '<span class="tag" title="Rewritten by Chrome\'s built-in AI on this computer">on-device AI</span>'
+        : '<span class="tag plain" title="On-device AI not available, filler words removed">keywords</span>'}
+    </div>`;
+
+  const paperCards = data.papers.map(paper => {
+    const meta = [htmlToText(paper.authors), paper.year].filter(Boolean).join(" · ");
+    return `
+      <a href="${escapeHtml(safeUrl(paper.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
+        <div class="card-title">${escapeHtml(htmlToText(paper.title))}</div>
+        ${meta ? `<div class="card-meta">${escapeHtml(meta)}</div>` : ""}
+        <div class="card-source">${escapeHtml([htmlToText(paper.venue), paper.source].filter(Boolean).join(" · "))}</div>
+      </a>`;
+  }).join("");
+
+  const papersSection = data.papers.length
+    ? `<div class="section-label">RESEARCH PAPERS</div><div class="cards-list">${paperCards}</div>`
+    : `<div class="status">No matching papers found. Try the searches below.</div>`;
+
+  const wiki = data.wikipedia;
+  const wikiSection = wiki ? `
+    <div class="section-label">BACKGROUND</div>
+    <a href="${escapeHtml(safeUrl(wiki.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
+      <div class="card-title">${escapeHtml(htmlToText(wiki.title))}</div>
+      <div class="card-meta">${escapeHtml(htmlToText(wiki.snippet))}...</div>
+      <div class="card-source">Wikipedia</div>
+    </a>
+    <div class="note">A starting point, not proof: check its cited sources.</div>` : "";
+
+  const failedNote = data.failedSources.length
+    ? `<div class="note">Couldn't reach: ${escapeHtml(data.failedSources.join(", "))}</div>`
+    : "";
+
+  const moreLinks = data.links.map(link =>
+    `<a href="${escapeHtml(safeUrl(link.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.title)}</a>`
+  ).join("");
+
+  container.innerHTML = `
+    ${searchInfo}
+    ${papersSection}
+    ${failedNote}
+    ${wikiSection}
+    <div class="section-label">SEARCH MORE ON</div>
+    <div class="more-links">${moreLinks}</div>`;
+}
+
+// Listen for background script events.
+// background.js injects this file on demand, possibly more than once per page, so only register once
+if (!window.__lumioCompassLoaded) {
+  window.__lumioCompassLoaded = true;
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "openCompass") {
+      injectCompassSidebar(request.text, request.requestId);
+      sendResponse({ opened: true }); // lets background.js know the sidebar really opened
+    } else if (request.action === "compassResults") {
+      showCompassResults(request);
+    }
+  });
+}

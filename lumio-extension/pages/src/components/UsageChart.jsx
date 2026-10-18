@@ -1,11 +1,11 @@
 import React from 'react';
 
-// Updated ChatGPT color to match the red streak card
+// each platform gets its own color from the dashboard palette
 const PLATFORM_META = {
   'chatgpt.com': { name: 'CHATGPT', color: '#B55043' }, // Red
   'claude.ai': { name: 'CLAUDE', color: '#D98C4A' },    // Orange
   'gemini.google.com': { name: 'GEMINI', color: '#2D4A3E' }, // Green
-  'perplexity.ai': { name: 'PERPLEXITY', color: '#B55043' }, 
+  'perplexity.ai': { name: 'PERPLEXITY', color: '#6D5A88' }, // Purple
   'default': { name: 'OTHER', color: '#333333' }
 };
 
@@ -28,7 +28,8 @@ export default function UsageChart({ domainBreakdown = [], totalTime = 0 }) {
   });
 
   if (cumulativePercentage < 100) {
-    gradientString += `, #3A2B20 ${cumulativePercentage}% 100%`;
+    // no leading comma when there are no platforms at all
+    gradientString += `${gradientString ? ', ' : ''}#3A2B20 ${cumulativePercentage}% 100%`;
   }
 
   return (
@@ -42,6 +43,11 @@ export default function UsageChart({ domainBreakdown = [], totalTime = 0 }) {
         ></div>
 
         <div className="platform-list">
+          {topPlatforms.length === 0 && (
+            <span className="platform-name" style={{ fontFamily: "'VT323', monospace", fontSize: '1.4rem' }}>
+              No platform data yet
+            </span>
+          )}
           {topPlatforms.map((platform, index) => {
             const meta = PLATFORM_META[platform.domain] || PLATFORM_META['default'];
             // Calculate the exact percentage for the tooltip
