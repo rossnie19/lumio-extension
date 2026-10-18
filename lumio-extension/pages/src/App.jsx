@@ -158,9 +158,7 @@ export default function App() {
           <>
             <Companion
               mood={mood}
-              characterId={activeCharacter.id}
-              characterName={activeCharacter.name}
-              characterImage={activeCharacter.image}
+              character={activeCharacter}
               petName={petName}
               age={age}
               onNameChange={handleNameSave}

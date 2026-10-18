@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CHARACTERS } from '../../../public/shared/constants.js';
+import SpritePortrait from './SpritePortrait';
 
 const indexOfCharacter = (id) => Math.max(0, CHARACTERS.findIndex(c => c.id === id));
 
@@ -25,7 +26,7 @@ export default function CharacterSelector({ activeId, onSelect }) {
   return (
     <div className="character-selector-card card">
       <div className="character-avatar-container">
-        <img src={currentCharacter.image} alt={currentCharacter.name} />
+        <SpritePortrait character={currentCharacter} className="selector-portrait" />
       </div>
 
       <div className="character-selector-controls">

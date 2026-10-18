@@ -406,10 +406,9 @@ strong { font-weight: normal; color: var(--ink); }
   border-radius: var(--radius);
 }
 
-.character-avatar-container img {
+.selector-portrait {
   width: 64px;
   height: 64px;
-  image-rendering: pixelated;
 }
 
 .character-selector-controls {

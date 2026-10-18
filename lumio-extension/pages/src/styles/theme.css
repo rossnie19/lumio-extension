@@ -106,13 +106,6 @@ body {
   border-radius: var(--radius);
 }
 
-.companion-portrait img {
-  display: block;
-  width: 68px;
-  height: 68px;
-  image-rendering: pixelated;
-}
-
 .companion-info {
   display: flex;
   flex: 1;
@@ -265,4 +258,27 @@ button.speech-bubble:hover { background-color: #FFFDF8; }
 
 @media (prefers-reduced-motion: reduce) {
   .pixel-btn { transition: none; }
+}
+
+/* --- animated character portrait (frames played by public/shared/spriteAnimator.js) --- */
+.sprite-portrait {
+  width: 68px;
+  height: 68px;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+  animation: portrait-breathe 2.6s ease-in-out infinite;
+}
+
+.sprite-portrait.asleep {
+  animation-duration: 4s;
+  filter: grayscale(0.3) brightness(0.9);
+}
+
+@keyframes portrait-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite-portrait { animation: none; }
 }

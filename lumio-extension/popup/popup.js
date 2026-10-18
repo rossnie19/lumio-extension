@@ -3,6 +3,7 @@ import { getCompanionMood } from "../public/shared/companionState.js";
 import { DEFAULT_PET_NAME, characterById } from "../public/shared/constants.js";
 import { formatMinutes } from "../public/shared/stats.js";
 import { pickDialogueLine } from "../public/shared/dialogue.js";
+import { animateSprite } from "../public/shared/spriteAnimator.js";
 
 const setText = (id, text) => { document.getElementById(id).textContent = text; };
 
@@ -28,7 +29,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const today = await getTodayStats(); // tracked by background.js, resets every day
 
         // companion card (same layout as the dashboard's)
-        document.getElementById("companion-sprite").src = character.image;
+        const spriteEl = document.getElementById("companion-sprite");
+        spriteEl.setAttribute("aria-label", character.name);
+        animateSprite(spriteEl, character, mood); // blinks / flaps / sleeps, same as the dashboard
         setText("pet-type", character.name);
         setText("pet-name", petName || DEFAULT_PET_NAME);
         const moodEl = document.getElementById("pet-mood");

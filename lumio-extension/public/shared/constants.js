@@ -21,9 +21,9 @@ export const DEFAULT_PET_NAME = "PET NAME";
 //the companion characters (sprite sheets: assets/companion/sprites, lines: dialogue.js).
 //content-scripts/pet.js can't import this file and keeps its own short list of ids
 export const CHARACTERS = [
-    { id: "mangkukulam", name: "MANGKUKULAM", image: "/assets/companion/mangkukulam.png" },
-    { id: "manananggal", name: "MANANANGGAL", image: "/assets/companion/manananggal.png" },
-    { id: "tikbalang", name: "TIKBALANG", image: "/assets/companion/tikbalang.png" }
+    { id: "mangkukulam", name: "MANGKUKULAM", image: "/assets/companion/mangkukulam.png", sprite: "/assets/companion/sprites/mangkukulam-sheet.png" },
+    { id: "manananggal", name: "MANANANGGAL", image: "/assets/companion/manananggal.png", sprite: "/assets/companion/sprites/manananggal-sheet.png", flying: true },
+    { id: "tikbalang", name: "TIKBALANG", image: "/assets/companion/tikbalang.png", sprite: "/assets/companion/sprites/tikbalang-sheet.png" }
 ];
 
 //character shown until the user picks one in the dashboard

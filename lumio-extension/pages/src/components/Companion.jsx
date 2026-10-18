@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { pickDialogueLine } from '../../../public/shared/dialogue.js';
 import { MOODS } from '../../../public/shared/companionState.js';
+import SpritePortrait from './SpritePortrait';
 const LINE_ROTATE_MS = 30 * 1000;
 
 // the companion card + speech bubble; styles shared with the popup (styles/theme.css)
 export default function Companion({
   mood = 'curious',
-  characterId,
-  characterName,
-  characterImage,
+  character,
   petName,
   age,
   onNameChange
@@ -17,6 +16,7 @@ export default function Companion({
 
   // what the companion says: a line from its folklore (dialogue.js) for the current mood.
   // a new one is picked when the mood or character changes, and every LINE_ROTATE_MS
+  const characterId = character.id;
   const [line, setLine] = useState(() => pickDialogueLine(characterId, moodKey));
 
   useEffect(() => {
@@ -48,11 +48,11 @@ export default function Companion({
     <section>
       <div className="companion-card">
         <div className="companion-portrait">
-          <img src={characterImage} alt={characterName} />
+          <SpritePortrait character={character} mood={moodKey} />
         </div>
 
         <div className="companion-info">
-          <div className="companion-type">{characterName}</div>
+          <div className="companion-type">{character.name}</div>
 
           {isEditing ? (
             <input
