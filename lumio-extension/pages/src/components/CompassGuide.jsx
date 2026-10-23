@@ -18,11 +18,11 @@ export default function CompassGuide() {
           Compass simply drops filler words instead.
         </li>
         <li>
-          <strong>Search.</strong> Only those short keywords are sent to three free research sources:
+          <strong>Search.</strong> Only those short keywords are sent to three free research databases:
           <ul>
             <li><strong>OpenAlex</strong>: research papers from every field</li>
             <li><strong>Europe PMC</strong>: health and medical studies</li>
-            <li><strong>Wikipedia</strong>: general background</li>
+            <li><strong>DOAJ</strong>: open-access journals, so every result is free to read</li>
           </ul>
         </li>
         <li>
@@ -30,8 +30,8 @@ export default function CompassGuide() {
           The AI only writes the search, never the sources, so it can't make up papers.
         </li>
         <li>
-          <strong>Compare.</strong> Open a few results and see if they agree with the claim. Wikipedia
-          is a starting point, not proof. More search sites are linked at the bottom.
+          <strong>Compare.</strong> Open a few results and see if they agree with the claim. More
+          search sites are linked at the bottom.
         </li>
       </ol>
       <p className="guide-note">

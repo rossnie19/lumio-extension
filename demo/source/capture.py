@@ -58,6 +58,9 @@ with sync_playwright() as p:
     for tab in ["WEEK", "COMPASS", "PET"]:
         page.get_by_role("tab", name=tab).click()
         page.wait_for_timeout(500)
+        if tab == "COMPASS":  # fold the "how it works" guide shut (the video doesn't list Wikipedia)
+            page.evaluate("document.querySelector('details.guide').open = false")
+            page.wait_for_timeout(200)
         page.screenshot(path=str(OUT / f"dash-{tab.lower()}.png"), full_page=True)
     page.close()
 
@@ -87,7 +90,7 @@ with sync_playwright() as p:
     page.add_script_tag(path=str(EXT / "content-scripts/compass.js"))
     page.evaluate("text => window.__compassListener({ action: 'openCompass', text, requestId: 'demo' }, {}, () => {})", CLAIM)
     page.wait_for_timeout(900)
-    results = json.loads((DEMO / "compass-results.json").read_text())
+    results = json.loads((DEMO / "compass-results-nowiki.json").read_text())  # video: no Wikipedia card
     page.evaluate("msg => window.__compassListener(msg, {}, () => {})", results)
     page.wait_for_timeout(1200)
     page.locator("#lumio-compass-root").screenshot(path=str(OUT / "compass-sidebar.png"))
