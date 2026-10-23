@@ -346,23 +346,13 @@ function showCompassResults(data) {
       <a href="${escapeHtml(safeUrl(paper.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
         <div class="card-title">${escapeHtml(htmlToText(paper.title))}</div>
         ${meta ? `<div class="card-meta">${escapeHtml(meta)}</div>` : ""}
-        <div class="card-source">${escapeHtml([htmlToText(paper.venue), paper.source].filter(Boolean).join(" · "))}</div>
+        <div class="card-source">${escapeHtml([paper.source, htmlToText(paper.venue)].filter(Boolean).join(" · "))}</div>
       </a>`;
   }).join("");
 
   const papersSection = data.papers.length
     ? `<div class="section-label">RESEARCH PAPERS</div><div class="cards-list">${paperCards}</div>`
     : `<div class="status">No matching papers found. Try the searches below.</div>`;
-
-  const wiki = data.wikipedia;
-  const wikiSection = wiki ? `
-    <div class="section-label">BACKGROUND</div>
-    <a href="${escapeHtml(safeUrl(wiki.url))}" target="_blank" rel="noopener noreferrer" class="compass-card">
-      <div class="card-title">${escapeHtml(htmlToText(wiki.title))}</div>
-      <div class="card-meta">${escapeHtml(htmlToText(wiki.snippet))}...</div>
-      <div class="card-source">Wikipedia</div>
-    </a>
-    <div class="note">A starting point, not proof: check its cited sources.</div>` : "";
 
   const failedNote = data.failedSources.length
     ? `<div class="note">Couldn't reach: ${escapeHtml(data.failedSources.join(", "))}</div>`
@@ -376,7 +366,6 @@ function showCompassResults(data) {
     ${searchInfo}
     ${papersSection}
     ${failedNote}
-    ${wikiSection}
     <div class="section-label">SEARCH MORE ON</div>
     <div class="more-links">${moreLinks}</div>`;
 }

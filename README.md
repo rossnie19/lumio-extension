@@ -21,7 +21,7 @@ A one-minute demo video is in [`demo/lumio-demo.mp4`](demo/lumio-demo.mp4).
 ## Privacy
 
 - Your usage stats never leave your browser (`chrome.storage.local`), and are deleted after 60 days.
-- Compass only sends the short search keywords to OpenAlex, Europe PMC and Wikipedia when you check a
+- Compass only sends the short search keywords to OpenAlex, Europe PMC and DOAJ when you check a
   claim. Nothing is stored.
 - No accounts, no analytics, no servers.
 
@@ -33,8 +33,8 @@ A one-minute demo video is in [`demo/lumio-demo.mp4`](demo/lumio-demo.mp4).
 - **Usage tracking**: time with AI, sessions and checked claims per day, kept for 60 days on your own
   computer (`chrome.storage.local`). Nothing is sent anywhere.
 - **Compass**: highlight a claim, right-click, then *Check with Compass*. Chrome's on-device AI turns it
-  into search keywords (when available), and Compass shows real papers from OpenAlex and Europe PMC,
-  plus Wikipedia background. Only the short keywords leave your computer.
+  into search keywords (when available), and Compass shows real papers from OpenAlex, Europe PMC and
+  DOAJ (open-access journals). Only the short keywords leave your computer.
 - **Dashboard**: a side panel with Today, Week, Compass and Pet tabs.
 
 ## Develop

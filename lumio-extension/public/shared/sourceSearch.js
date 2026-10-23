@@ -1,13 +1,14 @@
 // searches real, free research APIs for Compass (no accounts, no keys, nothing stored):
 // - OpenAlex: ~250M papers across all fields, sorted by relevance
 // - Europe PMC: health & life-science papers (includes PubMed), newest first
-// - Wikipedia: general background for everyday facts (labelled as background, not proof)
+// - DOAJ: papers from open-access journals only, so every result is free to read
 // titles/snippets may contain HTML markup; compass.js turns them into plain text before showing them
 
 const TIMEOUT_MS = 8 * 1000;
 const OPENALEX_RESULTS = 4;
 const EUROPE_PMC_RESULTS = 3;
-const MAX_PAPERS = 6;
+const DOAJ_RESULTS = 2;
+const MAX_PAPERS = 8;
 const MAX_AUTHORS_SHOWN = 2;
 
 async function getJSON(url) {
@@ -67,26 +68,28 @@ async function searchEuropePMC(query) {
     }));
 }
 
-async function searchWikipedia(query) {
-    const params = new URLSearchParams({
-        action: "query", list: "search", srsearch: query, srlimit: "1", format: "json", origin: "*"
+async function searchDOAJ(query) {
+    // DOAJ takes the query in the URL path and reads it as a search expression:
+    // keep only letters, digits and spaces so keywords can't be read as operators.
+    // every word must match, so long keyword lists often find nothing; that's on purpose
+    // (shortened or OR-ed searches were tested and mostly returned unrelated papers)
+    const safe = query.replace(/[^\p{L}\p{N}\s]/gu, " ").trim();
+    const data = await getJSON(`https://doaj.org/api/search/articles/${encodeURIComponent(safe)}?pageSize=${DOAJ_RESULTS}`);
+
+    return (data.results || []).map(r => {
+        const b = r.bibjson || {};
+        const doi = (b.identifier || []).find(i => (i.type || "").toLowerCase() === "doi")?.id;
+        const fullText = (b.link || []).find(l => l.type === "fulltext")?.url;
+        return {
+            title: b.title || "",
+            authors: formatAuthors((b.author || []).map(a => a.name)),
+            year: b.year ? Number(b.year) : null,
+            venue: b.journal?.title || "",
+            url: doi ? `https://doi.org/${doi}` : fullText || `https://doaj.org/article/${r.id}`,
+            doi: normalizeDoi(doi),
+            source: "DOAJ, open access"
+        };
     });
-    const data = await getJSON(`https://en.wikipedia.org/w/api.php?${params}`);
-    const hit = data.query?.search?.[0];
-    if (!hit) return null;
-
-    // wikipedia's search returns *something* for almost any query: only keep it if the article
-    // title shares a real word with the query, otherwise it's likely unrelated
-    const queryWords = new Set(query.toLowerCase().split(/\s+/).filter(w => w.length > 3));
-    const titleWords = hit.title.toLowerCase().split(/[^\p{L}\p{N}]+/u);
-    if (!titleWords.some(w => queryWords.has(w))) return null;
-
-    return {
-        title: hit.title,
-        snippet: hit.snippet,
-        url: `https://en.wikipedia.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`,
-        source: "Wikipedia"
-    };
 }
 
 // the same paper often comes back from more than one source: keep the first copy
@@ -100,12 +103,12 @@ function dedupePapers(papers) {
     });
 }
 
-// returns { papers, wikipedia, failedSources } - a source that errors or times out is skipped, not fatal
+// returns { papers, failedSources } - a source that errors or times out is skipped, not fatal
 export async function searchSources(query) {
-    const [openAlex, europePMC, wikipedia] = await Promise.allSettled([
+    const [openAlex, europePMC, doaj] = await Promise.allSettled([
         searchOpenAlex(query),
         searchEuropePMC(query),
-        searchWikipedia(query)
+        searchDOAJ(query)
     ]);
 
     const failedSources = [];
@@ -118,8 +121,9 @@ export async function searchSources(query) {
 
     const papers = dedupePapers([
         ...valueOf(openAlex, "OpenAlex", []),
-        ...valueOf(europePMC, "Europe PMC", [])
+        ...valueOf(europePMC, "Europe PMC", []),
+        ...valueOf(doaj, "DOAJ", [])
     ]).slice(0, MAX_PAPERS);
 
-    return { papers, wikipedia: valueOf(wikipedia, "Wikipedia", null), failedSources };
+    return { papers, failedSources };
 }

@@ -11,16 +11,16 @@ from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
 SR = 48000
-DURATION = 57.5
+DURATION = 60.1
 rng = np.random.default_rng(7)
 
 # --- timeline (mirrors motion.html) ---------------------------------------------------------
 T2, T3 = 5.1, 10.6
 T4 = T3 + 12.3
-T5 = T4 + 13.6
+T5 = T4 + 16.2
 T6 = T5 + 11.1
 T7 = T6 + 4.9
-WIPES = [4.4, T2 + 4.8, T3 + 11.6, T4 + 12.9, T5 + 10.4, T6 + 4.2]
+WIPES = [4.4, T2 + 4.8, T3 + 11.6, T4 + 15.5, T5 + 10.4, T6 + 4.2]
 MOOD_TIMES = [T3 + 4.9, T3 + 6.6, T3 + 8.3, T3 + 10.0]
 
 
@@ -305,11 +305,14 @@ def sfx():
     fx.add(T4 + 5.1, whoosh(0.8, 400, 4000), 0.42, 0.6)           # sidebar slides in from the right
     fx.add(T4 + 5.9, pop(1.1), 0.3)
     fx.add(T4 + 8.2, pop(1.1), 0.3)
-    for i in range(3):
+    for i in range(3):                                            # source badges (OpenAlex, Europe PMC, DOAJ)
         fx.add(T4 + 8.6 + i * 0.15, pop(1.5 + i * 0.2), 0.25, -0.3 + i * 0.3)
     for i in range(3):
-        fx.add(T4 + 11.0 + i * 0.1, tick(), 0.14)
-    fx.add(T4 + 11.35, notes([72, 79], 0.1, length=0.25), 0.08)
+        fx.add(T4 + 13.6 + i * 0.1, tick(), 0.14)
+    fx.add(T4 + 13.95, notes([72, 79], 0.1, length=0.25), 0.08)
+    fx.add(T4 + 11.0, pop(1.1), 0.3)                              # step 3: reference sites
+    for i in range(6):
+        fx.add(T4 + 11.4 + i * 0.12, pop(1.4 + i * 0.1), 0.18, -0.4 + i * 0.16)
     # 5. dashboard
     for i in range(4):
         fx.add(T5 + 0.3 + i * 0.14, pop(0.8 + i * 0.12), 0.3, -0.45 + i * 0.3)

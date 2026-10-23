@@ -117,12 +117,16 @@
       </div>
     </div>
     <img id="s4-menu" class="abs" src="assets/context-menu.png" style="left:640px; top:520px; width:470px; transform-origin:0 0">
+    <div id="s4-menu-hover" class="abs" style="left:640px; top:645px; width:470px; height:38px; background:#e3e5e8; mix-blend-mode:multiply"></div>
+    <div id="s4-ripple" class="abs" style="left:821px; top:647px; width:34px; height:34px; border-radius:50%; border:4px solid var(--gold); background:rgba(241,188,79,.3); z-index:31"></div>
     <div id="s4-side" class="shot" style="left:1290px; top:60px; width:500px; height:960px">
       <img id="s4-side-img" src="assets/compass-sidebar.png">
     </div>
     <div id="s4-c1" class="callout card" style="left:150px; top:600px"><div class="kicker">STEP 1</div><div class="text">Your highlight becomes search keywords, right on your computer.</div></div>
     <div id="s4-c2" class="callout card" style="left:150px; top:600px"><div class="kicker">STEP 2</div><div class="text">Real research comes back:</div>
-      <div style="margin-top:16px"><span class="badge" style="background:var(--purple)">OpenAlex</span><span class="badge" style="background:var(--green)">Europe PMC</span><span class="badge" style="background:var(--orange)">Wikipedia</span></div></div>
+      <div style="margin-top:16px"><span class="badge" style="background:var(--purple)">OpenAlex</span><span class="badge" style="background:var(--green)">Europe PMC</span><span class="badge" style="background:var(--orange)">DOAJ</span></div></div>
+    <div id="s4-c3" class="callout card" style="left:150px; top:560px; max-width:640px"><div class="kicker">STEP 3</div><div class="text">One click to search trusted references:</div>
+      <div style="margin-top:16px"><span class="badge" style="background:var(--purple)">Google Scholar</span><span class="badge" style="background:var(--green)">Semantic Scholar</span><span class="badge" style="background:var(--red)">PubMed</span><span class="badge" style="background:var(--orange)">JSTOR</span><span class="badge" style="background:var(--deep)">ScienceDirect</span><span class="badge" style="background:var(--grey)">UNESCO</span></div></div>
     <div id="s4-big" class="abs big" style="left:150px; top:330px; width:1040px; font-size:104px">No made-up sources.</div>
     <svg id="s4-cursor" class="cursor" viewBox="0 0 24 32" style="left:0; top:0"><path d="M3 2 L3 25 L9 19.5 L13.5 29.5 L17.5 27.7 L13 17.8 L21 17.8 Z" fill="#fff" stroke="#111" stroke-width="2" stroke-linejoin="round"/></svg>
   </section>
@@ -137,7 +141,7 @@
     <div id="s5-label" class="abs" style="left:150px; top:968px; width:1620px; height:80px">
       <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Today: your companion, its mood and today's numbers.</div>
       <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Week: time with AI per day, monthly totals, your streak.</div>
-      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Compass: claims checked, and how it works, step by step.</div>
+      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Compass: claims checked this week, and your cross-check rate.</div>
       <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Pet: choose your companion, and switch the walking pet on or off.</div>
     </div>
   </section>
@@ -288,15 +292,18 @@ wipe(T3 + 11.6, '#s3', '#s4');
 
 // 4. compass ----------------------------------------------------------------
 const T4 = T3 + 12.3;
-tl.set(['#s4-menu', '#s4-side', '#s4-c1', '#s4-c2', '#s4-big'], { autoAlpha: 0 }, 0);
+tl.set(['#s4-menu', '#s4-menu-hover', '#s4-ripple', '#s4-side', '#s4-c1', '#s4-c2', '#s4-c3', '#s4-big'], { autoAlpha: 0 }, 0);
 tl.from('#s4-head', { y: -40, opacity: 0, duration: .6 }, T4 + .1);
 tl.from('#s4-browser', { y: 120, opacity: 0, duration: .8 }, T4 + .2);
 tl.fromTo('#s4-cursor', { x: 900, y: 900 }, { x: 330, y: 480, duration: 1.0, ease: 'power2.inOut' }, T4 + .8);
 tl.to('#claim', { backgroundSize: '100% 100%', duration: 1.4, ease: 'power1.inOut' }, T4 + 1.9);
 tl.to('#s4-cursor', { x: 640, y: 525, duration: 1.4, ease: 'power1.inOut' }, T4 + 1.9);
 tl.fromTo('#s4-menu', { autoAlpha: 0, scale: .85 }, { autoAlpha: 1, scale: 1, duration: .25, ease: 'power2.out' }, T4 + 3.6);
-tl.to('#s4-cursor', { x: 760, y: 740, duration: .7, ease: 'power2.inOut' }, T4 + 4.0);
-tl.to('#s4-menu', { autoAlpha: 0, duration: .2 }, T4 + 5.0);
+tl.to('#s4-cursor', { x: 832, y: 660, duration: .7, ease: 'power2.inOut' }, T4 + 4.0);   // tip lands on "Check ... with Compass"
+tl.to('#s4-menu-hover', { autoAlpha: 1, duration: .12 }, T4 + 4.5);                        // row highlights on hover
+tl.fromTo('#s4-ripple', { autoAlpha: 1, scale: .3 }, { autoAlpha: 0, scale: 1.6, duration: .5, ease: 'power2.out' }, T4 + 4.75); // click
+tl.to('#s4-cursor', { scale: .9, duration: .08, yoyo: true, repeat: 1, transformOrigin: '12% 6%' }, T4 + 4.75);
+tl.to(['#s4-menu', '#s4-menu-hover'], { autoAlpha: 0, duration: .2 }, T4 + 5.0);
 tl.to('#s4-cursor', { autoAlpha: 0, duration: .2 }, T4 + 5.0);
 tl.fromTo('#s4-side', { autoAlpha: 1, x: 700 }, { x: 0, duration: .9, ease: 'power4.out' }, T4 + 5.1);
 tl.to('#s4-browser', { scale: .9, x: -30, opacity: .35, duration: .8 }, T4 + 5.4);
@@ -306,13 +313,16 @@ tl.fromTo('#s4-c2', { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: .5,
 tl.from('#s4-c2 .badge', { scale: 0, duration: .4, stagger: .15, ease: 'back.out(2.5)' }, T4 + 8.6);
 tl.to('#s4-side-img', { y: -350, duration: 3.0, ease: 'power1.inOut' }, T4 + 8.4);
 tl.to('#s4-c2', { autoAlpha: 0, y: -30, duration: .35 }, T4 + 10.8);
-tl.to('#s4-browser', { opacity: 0, duration: .4 }, T4 + 10.8);
-tl.fromTo('#s4-big', { autoAlpha: 0 }, { autoAlpha: 1, duration: .1 }, T4 + 11.0);
-tl.from(split($('#s4-big'), 'w'), { y: 90, opacity: 0, rotate: 4, duration: .6, stagger: .1 }, T4 + 11.0);
-wipe(T4 + 12.9, '#s4', '#s5');
+tl.fromTo('#s4-c3', { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: .5, ease: 'back.out(1.6)' }, T4 + 11.0);
+tl.from('#s4-c3 .badge', { scale: 0, duration: .35, stagger: .12, ease: 'back.out(2.5)' }, T4 + 11.4);
+tl.to('#s4-c3', { autoAlpha: 0, y: -30, duration: .35 }, T4 + 13.4);
+tl.to('#s4-browser', { opacity: 0, duration: .4 }, T4 + 13.4);
+tl.fromTo('#s4-big', { autoAlpha: 0 }, { autoAlpha: 1, duration: .1 }, T4 + 13.6);
+tl.from(split($('#s4-big'), 'w'), { y: 90, opacity: 0, rotate: 4, duration: .6, stagger: .1 }, T4 + 13.6);
+wipe(T4 + 15.5, '#s4', '#s5');
 
 // 5. dashboard ----------------------------------------------------------------
-const T5 = T4 + 13.6;
+const T5 = T4 + 16.2;
 const shots = $$('.dshot');
 tl.from('#s5-head', { x: -80, opacity: 0, duration: .6 }, T5 + .1);
 tl.from(shots, { y: 300, opacity: 0, rotateY: -35, duration: .9, stagger: .14, ease: 'power3.out' }, T5 + .3);
