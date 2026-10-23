@@ -1,0 +1,360 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Lumio motion</title>
+<style>
+  @font-face { font-family: Pixel; src: url(fonts/press-start-2p.woff2); }
+  @font-face { font-family: Term; src: url(fonts/vt323.woff2); }
+  :root { --page:#EAE3D2; --paper:#F6F1E6; --sunk:#EFE7D6; --ink:#2E2219; --soft:#6B5847; --purple:#5E4B7E;
+          --deep:#3F3158; --tint:#E6DDF3; --green:#2F5144; --orange:#B4652A; --red:#A3453A; --gold:#F1BC4F; --grey:#7D7468; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--page); }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; color: var(--ink); font-family: Term, monospace;
+           background: var(--page);
+           background-image: linear-gradient(rgba(46,34,25,.055) 2px, transparent 2px), linear-gradient(90deg, rgba(46,34,25,.055) 2px, transparent 2px);
+           background-size: 48px 48px; }
+  .scene { position: absolute; inset: 0; visibility: hidden; }
+  .abs { position: absolute; }
+  .card { background: var(--paper); border: 5px solid var(--ink); border-radius: 8px; box-shadow: 10px 10px 0 rgba(46,34,25,.25); }
+  .shot { position: absolute; border: 5px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--paper);
+          box-shadow: 14px 14px 0 rgba(46,34,25,.28); }
+  .shot img { display: block; width: 100%; }
+  .pixel { font-family: Pixel, monospace; }
+  .kicker { font-family: Pixel; font-size: 22px; color: var(--purple); letter-spacing: 1px; }
+  .title { font-family: Pixel; font-size: 46px; line-height: 1.4; }
+  .big { font-family: Term; font-size: 118px; line-height: .95; }
+  .lead { font-family: Term; font-size: 50px; line-height: 1.05; color: var(--soft); }
+  .chip { display: inline-block; font-family: Pixel; font-size: 20px; color: #fff; padding: 14px 18px; border: 4px solid var(--ink);
+          border-radius: 6px; box-shadow: 5px 5px 0 rgba(46,34,25,.25); }
+  .w, .ch { display: inline-block; white-space: pre; }
+  .sprite { background-size: 400% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
+  .floater { position: absolute; width: 22px; height: 22px; border: 4px solid var(--ink); }
+  #wipe { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(9, 1fr); z-index: 50; }
+  #wipe div { background: var(--ink); transform: scale(0); }
+  .cursor { position: absolute; width: 46px; height: 62px; z-index: 30; filter: drop-shadow(3px 4px 3px rgba(0,0,0,.35)); }
+  .bubble { position: absolute; font-family: Term; font-size: 44px; padding: 2px 16px; background: var(--paper); border: 4px solid var(--ink);
+            border-radius: 8px; box-shadow: 5px 5px 0 rgba(46,34,25,.25); }
+  .callout { position: absolute; padding: 22px 28px; max-width: 560px; }
+  .callout .kicker { margin-bottom: 10px; }
+  .callout .text { font-size: 44px; line-height: 1.02; }
+  .badge { display: inline-block; font-family: Term; font-size: 38px; padding: 4px 16px; margin: 0 10px 10px 0; color: #fff; border: 4px solid var(--ink); border-radius: 6px; }
+</style></head>
+<body>
+<div id="stage">
+  <div id="floaters"></div>
+
+  <!-- 1. intro -->
+  <section class="scene" id="s1">
+    <img id="s1-logo" class="abs" src="assets/lumio-logo.png" style="left:610px; top:300px; width:700px; image-rendering:pixelated">
+    <div id="s1-tag" class="abs lead" style="left:0; width:1920px; top:640px; text-align:center; font-size:64px; color:var(--ink)">A companion for smarter AI use</div>
+    <div id="s1-chip" class="abs" style="left:0; width:1920px; top:760px; text-align:center"><span class="chip" style="background:var(--purple)">CHROME EXTENSION</span></div>
+  </section>
+
+  <!-- 2. hook -->
+  <section class="scene" id="s2">
+    <div id="s2-a" class="abs big" style="left:150px; top:250px; width:900px">AI answers sound confident.</div>
+    <div id="s2-b" class="abs big" style="left:150px; top:520px; width:900px">But are they <span id="s2-true" style="position:relative; display:inline-block; padding:0 10px"><span id="s2-mark" class="abs" style="inset:6px 0 0 0; background:var(--gold); transform-origin:left; z-index:-1"></span>true?</span></div>
+    <div id="s2-chat" class="card abs" style="left:1100px; top:300px; width:680px; padding:34px 38px">
+      <div style="display:flex; gap:22px; align-items:flex-start">
+        <div style="flex-shrink:0; width:62px; height:62px; border-radius:50%; background:#3b6e5f; color:#fff; font:30px Term; display:grid; place-items:center">AI</div>
+        <div style="font-size:44px; line-height:1.05">Yes. Drinking coffee every day causes dehydration, because caffeine is a diuretic.</div>
+      </div>
+    </div>
+    <div id="s2-stamp" class="abs pixel" style="left:1690px; top:220px; width:140px; height:140px; border-radius:50%; background:var(--red); color:#fff; border:6px solid var(--ink); font-size:66px; display:grid; place-items:center; box-shadow:7px 7px 0 rgba(46,34,25,.3)">?</div>
+  </section>
+
+  <!-- 3. companions -->
+  <section class="scene" id="s3">
+    <div id="s3-head" class="abs" style="left:150px; top:110px"><div class="kicker">MEET YOUR</div><div class="title">COMPANION</div></div>
+    <div id="s3-cards">
+      <div class="s3-card card abs" style="left:250px; top:330px; width:420px; padding:28px; text-align:center">
+        <div class="sprite" data-mode="blink" data-sheet="mangkukulam" style="width:300px; height:300px; margin:0 auto 18px; background-color:var(--deep); border:4px solid var(--ink); border-radius:6px"></div>
+        <div class="pixel" style="font-size:22px">MANGKUKULAM</div><div style="font-size:38px; color:var(--soft); margin-top:8px">the witch</div>
+      </div>
+      <div class="s3-card card abs" style="left:750px; top:330px; width:420px; padding:28px; text-align:center">
+        <div class="sprite" data-mode="flap" data-sheet="manananggal" style="width:300px; height:300px; margin:0 auto 18px; background-color:var(--deep); border:4px solid var(--ink); border-radius:6px"></div>
+        <div class="pixel" style="font-size:22px">MANANANGGAL</div><div style="font-size:38px; color:var(--soft); margin-top:8px">the winged one</div>
+      </div>
+      <div class="s3-card card abs" style="left:1250px; top:330px; width:420px; padding:28px; text-align:center">
+        <div class="sprite" data-mode="smoke" data-sheet="tikbalang" style="width:300px; height:300px; margin:0 auto 18px; background-color:var(--deep); border:4px solid var(--ink); border-radius:6px"></div>
+        <div class="pixel" style="font-size:22px">TIKBALANG</div><div style="font-size:38px; color:var(--soft); margin-top:8px">the trickster</div>
+      </div>
+    </div>
+    <div id="s3-sub" class="abs lead" style="left:0; width:1920px; top:880px; text-align:center">Pick one from Philippine folklore.</div>
+
+    <!-- mood showcase -->
+    <div id="s3-mood">
+      <div id="s3-hero" class="abs" style="left:190px; top:300px; width:520px; height:520px; background:var(--purple); border:6px solid var(--ink); border-radius:10px; box-shadow:14px 14px 0 rgba(46,34,25,.28)">
+        <div id="hero-sprite" class="sprite" data-mode="mood" data-sheet="tikbalang" style="position:absolute; left:60px; top:70px; width:400px; height:400px; transform-origin:50% 100%"></div>
+        <div id="hero-bubble" class="bubble" style="left:330px; top:30px; opacity:0">!</div>
+      </div>
+      <div id="s3-chips" class="abs" style="left:800px; top:310px; display:flex; gap:16px">
+        <span class="chip mchip" style="background:var(--deep)">CURIOUS</span><span class="chip mchip" style="background:var(--green)">FOCUSED</span>
+        <span class="chip mchip" style="background:var(--red)">CONCERNED</span><span class="chip mchip" style="background:var(--grey)">IDLE</span>
+      </div>
+      <div class="abs" style="left:800px; top:430px; width:950px; height:300px">
+        <div class="mood-text abs" style="inset:0"><div class="title" style="font-size:40px">CURIOUS</div><div class="lead" style="margin-top:20px; color:var(--ink)">The everyday mood. Keep asking, and check the tricky answers.</div></div>
+        <div class="mood-text abs" style="inset:0"><div class="title" style="font-size:40px; color:var(--green)">FOCUSED</div><div class="lead" style="margin-top:20px; color:var(--ink)">You just checked a claim. It's proud of you.</div></div>
+        <div class="mood-text abs" style="inset:0"><div class="title" style="font-size:40px; color:var(--red)">CONCERNED</div><div class="lead" style="margin-top:20px; color:var(--ink)">45 minutes of AI without a break. Time to step away.</div></div>
+        <div class="mood-text abs" style="inset:0"><div class="title" style="font-size:40px; color:var(--grey)">IDLE</div><div class="lead" style="margin-top:20px; color:var(--ink)">No AI for 30 minutes. It falls asleep.</div></div>
+      </div>
+      <div id="s3-walk" class="abs lead" style="left:800px; top:780px; width:1000px; font-size:40px">It walks along the bottom of AI sites and acts out its mood.</div>
+    </div>
+  </section>
+
+  <!-- 4. compass -->
+  <section class="scene" id="s4">
+    <div id="s4-head" class="abs" style="left:150px; top:90px"><img src="assets/compass-logo.png" style="height:84px; image-rendering:pixelated"></div>
+    <div id="s4-browser" class="card abs" style="left:150px; top:230px; width:1060px; height:640px; overflow:hidden; padding:0">
+      <div style="height:64px; background:var(--sunk); border-bottom:4px solid var(--ink); display:flex; align-items:center; gap:14px; padding:0 24px">
+        <i style="width:20px;height:20px;border-radius:50%;background:#e06b5b;border:3px solid var(--ink)"></i><i style="width:20px;height:20px;border-radius:50%;background:var(--gold);border:3px solid var(--ink)"></i><i style="width:20px;height:20px;border-radius:50%;background:#6fae7a;border:3px solid var(--ink)"></i>
+        <div style="margin-left:18px; flex:1; height:36px; border-radius:18px; background:var(--paper); border:3px solid var(--ink); font-size:28px; line-height:30px; padding-left:18px; color:var(--soft)">your AI chat</div>
+      </div>
+      <div style="padding:46px 56px; font-family:-apple-system, 'Segoe UI', Roboto, sans-serif; font-size:30px; line-height:1.5; color:#1f2328">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:36px"><div style="background:#fff; border:2px solid #ddd; border-radius:22px; padding:12px 22px">Is drinking coffee bad for staying hydrated?</div></div>
+        <div style="display:flex; gap:20px">
+          <div style="flex-shrink:0; width:48px; height:48px; border-radius:50%; background:#3b6e5f; color:#fff; font-size:20px; display:grid; place-items:center">AI</div>
+          <div>Yes. <span id="claim" style="background-image:linear-gradient(rgba(241,188,79,.75), rgba(241,188,79,.75)); background-repeat:no-repeat; background-size:0% 100%">Drinking coffee every day causes dehydration, because caffeine is a diuretic</span> that makes your body lose more water than the coffee provides.</div>
+        </div>
+      </div>
+    </div>
+    <img id="s4-menu" class="abs" src="assets/context-menu.png" style="left:640px; top:520px; width:470px; transform-origin:0 0">
+    <div id="s4-side" class="shot" style="left:1290px; top:60px; width:500px; height:960px">
+      <img id="s4-side-img" src="assets/compass-sidebar.png">
+    </div>
+    <div id="s4-c1" class="callout card" style="left:150px; top:600px"><div class="kicker">STEP 1</div><div class="text">Your highlight becomes search keywords, right on your computer.</div></div>
+    <div id="s4-c2" class="callout card" style="left:150px; top:600px"><div class="kicker">STEP 2</div><div class="text">Real research comes back:</div>
+      <div style="margin-top:16px"><span class="badge" style="background:var(--purple)">OpenAlex</span><span class="badge" style="background:var(--green)">Europe PMC</span><span class="badge" style="background:var(--orange)">Wikipedia</span></div></div>
+    <div id="s4-big" class="abs big" style="left:150px; top:330px; width:1040px; font-size:104px">No made-up sources.</div>
+    <svg id="s4-cursor" class="cursor" viewBox="0 0 24 32" style="left:0; top:0"><path d="M3 2 L3 25 L9 19.5 L13.5 29.5 L17.5 27.7 L13 17.8 L21 17.8 Z" fill="#fff" stroke="#111" stroke-width="2" stroke-linejoin="round"/></svg>
+  </section>
+
+  <!-- 5. dashboard -->
+  <section class="scene" id="s5" style="perspective:2200px">
+    <div id="s5-head" class="abs" style="left:150px; top:90px"><div class="kicker">IN CHROME'S SIDE PANEL</div><div class="title">YOUR DASHBOARD</div></div>
+    <div class="dshot shot" style="left:240px; top:235px; width:400px; height:680px"><img src="assets/dash-today.png"></div>
+    <div class="dshot shot" style="left:620px; top:235px; width:400px; height:680px"><img src="assets/dash-week.png"></div>
+    <div class="dshot shot" style="left:1000px; top:235px; width:400px; height:680px"><img src="assets/dash-compass.png"></div>
+    <div class="dshot shot" style="left:1380px; top:235px; width:400px; height:680px"><img src="assets/dash-pet.png"></div>
+    <div id="s5-label" class="abs" style="left:150px; top:968px; width:1620px; height:80px">
+      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Today: your companion, its mood and today's numbers.</div>
+      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Week: time with AI per day, monthly totals, your streak.</div>
+      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Compass: claims checked, and how it works, step by step.</div>
+      <div class="dlabel abs lead" style="inset:0; text-align:center; color:var(--ink)">Pet: choose your companion, and switch the walking pet on or off.</div>
+    </div>
+  </section>
+
+  <!-- 6. popup -->
+  <section class="scene" id="s6">
+    <div id="s6-text" class="abs" style="left:170px; top:330px; width:820px">
+      <div class="kicker">IN YOUR TOOLBAR</div>
+      <div class="big" style="margin-top:22px; font-size:104px">Your day at a glance.</div>
+      <div style="margin-top:36px; display:flex; gap:18px">
+        <span class="chip" style="background:var(--orange)"><span id="cnt-time">0m</span> WITH AI</span>
+        <span class="chip" style="background:var(--green)"><span id="cnt-claims">0</span> CHECKED</span>
+      </div>
+    </div>
+    <div id="s6-popup" class="shot" style="left:1150px; top:150px; width:520px; border:none; box-shadow:18px 18px 0 rgba(46,34,25,.28); background:transparent"><img src="assets/popup.png"></div>
+  </section>
+
+  <!-- 7. outro -->
+  <section class="scene" id="s7">
+    <img id="s7-logo" class="abs" src="assets/lumio-logo.png" style="left:660px; top:250px; width:600px; image-rendering:pixelated">
+    <div id="s7-a" class="abs big" style="left:0; width:1920px; top:560px; text-align:center">Stay curious.</div>
+    <div id="s7-b" class="abs big" style="left:0; width:1920px; top:680px; text-align:center; color:var(--purple)">Check your sources.</div>
+  </section>
+
+  <div id="wipe"></div>
+  <div id="fade" class="abs" style="inset:0; background:#000; z-index:60; opacity:1"></div>
+</div>
+
+<script src="gsap.min.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+
+// split text into words / characters for kinetic type
+function split(el, unit) {
+  const walk = (node) => {
+    [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) {
+        const parts = unit === 'ch' ? [...n.textContent] : n.textContent.split(/(\s+)/);
+        const frag = document.createDocumentFragment();
+        parts.forEach(p => { if (!p) return; const s = document.createElement('span'); s.className = unit; s.textContent = p; frag.appendChild(s); });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1 && !n.classList.contains('abs')) walk(n);
+    });
+  };
+  walk(el);
+  return [...el.querySelectorAll('.' + unit)];
+}
+
+// sprite sheets: 4 frames (open, closed, move A, move B), driven by renderAt(t)
+const SHEETS = { mangkukulam: 'sprites/mangkukulam-sheet.png', manananggal: 'sprites/manananggal-sheet.png', tikbalang: 'sprites/tikbalang-sheet.png' };
+$$('.sprite').forEach(s => s.style.backgroundImage = `url(${SHEETS[s.dataset.sheet]})`);
+const CYCLE = [0, 2, 0, 3];
+const state = { mood: 'curious' };
+function spriteFrame(mode, t) {
+  if (mode === 'mood') mode = { curious: 'blink', focused: 'blink', concerned: 'smoke', idle: 'idle' }[state.mood];
+  if (mode === 'idle') return 1;
+  if (mode === 'flap') return CYCLE[Math.floor(t / 0.22) % 4];
+  if (mode === 'smoke') return CYCLE[Math.floor(t / 0.3) % 4];
+  return (t % 2.7) < 0.14 ? 1 : 0; // blink
+}
+
+// floating pixel squares in the background
+const FLOAT_COLORS = ['var(--gold)', 'var(--purple)', 'var(--green)', 'var(--orange)', 'var(--red)', 'var(--paper)'];
+const floaters = [];
+for (let i = 0; i < 18; i++) {
+  const el = document.createElement('div');
+  el.className = 'floater';
+  const size = 16 + ((i * 37) % 22);
+  // keep them in the margins so they never sit behind text or cards
+  const edge = i % 4, along = (i * 433) % 1;
+  const pos = [
+    [(i * 233) % 1840 + 20, 18 + (i % 3) * 14],          // top strip
+    [(i * 197) % 1840 + 20, 1030 - (i % 3) * 14],        // bottom strip
+    [24 + (i % 3) * 30, (i * 151) % 980 + 40],           // left strip
+    [1860 - (i % 3) * 30, (i * 173) % 980 + 40],         // right strip
+  ][edge];
+  Object.assign(el.style, { left: pos[0] + 'px', top: pos[1] + 'px', width: size + 'px', height: size + 'px',
+                            background: FLOAT_COLORS[i % FLOAT_COLORS.length], opacity: .4 });
+  $('#floaters').appendChild(el);
+  floaters.push({ el, speed: .3 + (i % 5) * .12, phase: i * 1.7, amp: 14 + (i % 4) * 8 });
+}
+
+// pixel wipe grid
+for (let i = 0; i < 16 * 9; i++) $('#wipe').appendChild(document.createElement('div'));
+const cells = $$('#wipe div');
+
+const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+const show = (sel, at) => tl.set(sel, { autoAlpha: 1 }, at);
+const hide = (sel, at) => tl.set(sel, { autoAlpha: 0 }, at);
+function wipe(at, from, to) {
+  tl.to(cells, { scale: 1.02, duration: .28, ease: 'power2.in', stagger: { grid: [9, 16], from: 'center', amount: .32 } }, at);
+  hide(from, at + .62); show(to, at + .62);
+  tl.to(cells, { scale: 0, duration: .28, ease: 'power2.out', stagger: { grid: [9, 16], from: 'edges', amount: .32 } }, at + .64);
+}
+
+// 1. intro -------------------------------------------------------------
+show('#s1', 0);
+tl.to('#fade', { opacity: 0, duration: .8, ease: 'none' }, 0);
+tl.from('#s1-logo', { scale: .2, opacity: 0, y: 40, duration: 1.1, ease: 'back.out(1.8)' }, .3);
+tl.from(split($('#s1-tag'), 'ch'), { opacity: 0, y: 26, duration: .4, stagger: .025 }, 1.2);
+tl.from('#s1-chip', { scale: 0, duration: .6, ease: 'back.out(2.5)' }, 2.3);
+tl.to('#s1-logo', { y: -10, duration: 1.6, ease: 'sine.inOut' }, 2.9);
+wipe(4.4, '#s1', '#s2');
+
+// 2. hook ---------------------------------------------------------------
+const T2 = 5.1;
+tl.from(split($('#s2-a'), 'w'), { y: 90, opacity: 0, rotate: 4, duration: .7, stagger: .08 }, T2 + .2);
+tl.from(split($('#s2-b'), 'w'), { y: 90, opacity: 0, rotate: 4, duration: .7, stagger: .08 }, T2 + 1.5);
+tl.from('#s2-mark', { scaleX: 0, duration: .5, ease: 'power2.inOut' }, T2 + 2.3);
+tl.from('#s2-chat', { x: 260, opacity: 0, rotate: 3, duration: .9 }, T2 + 1.0);
+tl.from('#s2-stamp', { scale: 3, opacity: 0, rotate: -40, duration: .45, ease: 'back.out(1.6)' }, T2 + 2.9);
+tl.to('#s2-stamp', { rotate: 12, duration: .2, yoyo: true, repeat: 3, ease: 'sine.inOut' }, T2 + 3.4);
+wipe(T2 + 4.8, '#s2', '#s3');
+
+// 3. companions ----------------------------------------------------------
+const T3 = T2 + 5.5;
+tl.from('#s3-head', { x: -80, opacity: 0, duration: .7 }, T3 + .1);
+tl.from('.s3-card', { y: 160, opacity: 0, rotate: (i) => [-5, 3, -3][i], duration: .8, stagger: .16, ease: 'back.out(1.4)' }, T3 + .3);
+tl.to('.s3-card', { y: -14, duration: 1.2, stagger: .2, yoyo: true, repeat: 1, ease: 'sine.inOut' }, T3 + 1.3);
+tl.from('#s3-sub', { opacity: 0, y: 24, duration: .6 }, T3 + 1.2);
+tl.to(['.s3-card', '#s3-sub'], { y: 180, opacity: 0, duration: .5, stagger: .06, ease: 'power2.in' }, T3 + 3.8);
+hide('#s3-mood', 0); show('#s3-mood', T3 + 4.2);
+tl.from('#s3-hero', { scale: .6, opacity: 0, rotate: -4, duration: .8, ease: 'back.out(1.5)' }, T3 + 4.2);
+tl.from('.mchip', { y: 50, opacity: 0, duration: .5, stagger: .1 }, T3 + 4.6);
+tl.from('#s3-walk', { opacity: 0, y: 20, duration: .6 }, T3 + 5.2);
+const MOODS = ['curious', 'focused', 'concerned', 'idle'];
+const MT = [T3 + 4.9, T3 + 6.6, T3 + 8.3, T3 + 10.0];
+tl.set('.mood-text', { autoAlpha: 0 }, 0);
+tl.set('.mchip', { opacity: .35 }, T3 + 5.1);
+MOODS.forEach((m, i) => {
+  const at = MT[i];
+  tl.call(() => { state.mood = m; }, null, at);
+  tl.to(`.mchip:nth-child(${i + 1})`, { opacity: 1, scale: 1.12, duration: .3, ease: 'back.out(3)' }, at);
+  if (i > 0) tl.to(`.mchip:nth-child(${i})`, { opacity: .35, scale: 1, duration: .3 }, at);
+  tl.fromTo($$('.mood-text')[i], { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: .45 }, at);
+  if (i > 0) tl.to($$('.mood-text')[i - 1], { autoAlpha: 0, y: -30, duration: .3 }, at);
+});
+// moods acted out
+tl.set('#hero-bubble', { textContent: '📖' }, MT[1]);
+tl.fromTo('#hero-bubble', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: .35 }, MT[1]);
+tl.set('#hero-bubble', { textContent: '!', color: '#fff', backgroundColor: '#A3453A' }, MT[2]);
+tl.to('#hero-sprite', { rotate: 6, duration: .12, yoyo: true, repeat: 13, ease: 'sine.inOut' }, MT[2]);
+tl.set('#hero-bubble', { textContent: 'z z z', color: '#2E2219', backgroundColor: '#F6F1E6' }, MT[3]);
+tl.to('#hero-sprite', { filter: 'grayscale(.4) brightness(.92)', scaleY: .96, duration: .6 }, MT[3]);
+tl.to('#s3-hero', { backgroundColor: '#4a3f5c', duration: .6 }, MT[3]);
+wipe(T3 + 11.6, '#s3', '#s4');
+
+// 4. compass ----------------------------------------------------------------
+const T4 = T3 + 12.3;
+tl.set(['#s4-menu', '#s4-side', '#s4-c1', '#s4-c2', '#s4-big'], { autoAlpha: 0 }, 0);
+tl.from('#s4-head', { y: -40, opacity: 0, duration: .6 }, T4 + .1);
+tl.from('#s4-browser', { y: 120, opacity: 0, duration: .8 }, T4 + .2);
+tl.fromTo('#s4-cursor', { x: 900, y: 900 }, { x: 330, y: 480, duration: 1.0, ease: 'power2.inOut' }, T4 + .8);
+tl.to('#claim', { backgroundSize: '100% 100%', duration: 1.4, ease: 'power1.inOut' }, T4 + 1.9);
+tl.to('#s4-cursor', { x: 640, y: 525, duration: 1.4, ease: 'power1.inOut' }, T4 + 1.9);
+tl.fromTo('#s4-menu', { autoAlpha: 0, scale: .85 }, { autoAlpha: 1, scale: 1, duration: .25, ease: 'power2.out' }, T4 + 3.6);
+tl.to('#s4-cursor', { x: 760, y: 740, duration: .7, ease: 'power2.inOut' }, T4 + 4.0);
+tl.to('#s4-menu', { autoAlpha: 0, duration: .2 }, T4 + 5.0);
+tl.to('#s4-cursor', { autoAlpha: 0, duration: .2 }, T4 + 5.0);
+tl.fromTo('#s4-side', { autoAlpha: 1, x: 700 }, { x: 0, duration: .9, ease: 'power4.out' }, T4 + 5.1);
+tl.to('#s4-browser', { scale: .9, x: -30, opacity: .35, duration: .8 }, T4 + 5.4);
+tl.fromTo('#s4-c1', { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: .5, ease: 'back.out(1.6)' }, T4 + 5.9);
+tl.to('#s4-c1', { autoAlpha: 0, y: -30, duration: .35 }, T4 + 8.0);
+tl.fromTo('#s4-c2', { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: .5, ease: 'back.out(1.6)' }, T4 + 8.2);
+tl.from('#s4-c2 .badge', { scale: 0, duration: .4, stagger: .15, ease: 'back.out(2.5)' }, T4 + 8.6);
+tl.to('#s4-side-img', { y: -350, duration: 3.0, ease: 'power1.inOut' }, T4 + 8.4);
+tl.to('#s4-c2', { autoAlpha: 0, y: -30, duration: .35 }, T4 + 10.8);
+tl.to('#s4-browser', { opacity: 0, duration: .4 }, T4 + 10.8);
+tl.fromTo('#s4-big', { autoAlpha: 0 }, { autoAlpha: 1, duration: .1 }, T4 + 11.0);
+tl.from(split($('#s4-big'), 'w'), { y: 90, opacity: 0, rotate: 4, duration: .6, stagger: .1 }, T4 + 11.0);
+wipe(T4 + 12.9, '#s4', '#s5');
+
+// 5. dashboard ----------------------------------------------------------------
+const T5 = T4 + 13.6;
+const shots = $$('.dshot');
+tl.from('#s5-head', { x: -80, opacity: 0, duration: .6 }, T5 + .1);
+tl.from(shots, { y: 300, opacity: 0, rotateY: -35, duration: .9, stagger: .14, ease: 'power3.out' }, T5 + .3);
+tl.set(shots, { rotateY: -12, transformOrigin: '50% 50%' }, T5 + .3);
+tl.set('.dlabel', { autoAlpha: 0 }, 0);
+const DT = [T5 + 1.6, T5 + 3.6, T5 + 5.6, T5 + 7.6];
+DT.forEach((at, i) => {
+  tl.to(shots, { scale: (j) => j === i ? 1.12 : .94, rotateY: (j) => j === i ? 0 : -12, opacity: (j) => j === i ? 1 : .55,
+                 zIndex: (j) => j === i ? 5 : 1, y: (j) => j === i ? -40 : 0, duration: .6, ease: 'power3.inOut' }, at);
+  tl.fromTo($$('.dlabel')[i], { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: .4 }, at + .2);
+  if (i > 0) tl.to($$('.dlabel')[i - 1], { autoAlpha: 0, duration: .2 }, at);
+});
+tl.to(shots, { scale: 1, rotateY: 0, opacity: 1, y: 0, duration: .6 }, T5 + 9.6);
+tl.to($$('.dlabel')[3], { autoAlpha: 0, duration: .3 }, T5 + 9.6);
+wipe(T5 + 10.4, '#s5', '#s6');
+
+// 6. popup ----------------------------------------------------------------------
+const T6 = T5 + 11.1;
+tl.from('#s6-popup', { y: 200, rotate: 6, scale: .8, opacity: 0, duration: .9, ease: 'back.out(1.3)' }, T6 + .1);
+tl.from('#s6-text > *', { x: -80, opacity: 0, duration: .6, stagger: .15 }, T6 + .3);
+const counters = { m: 0, c: 0 };
+tl.to(counters, { m: 83, c: 2, duration: 1.4, ease: 'power2.out', onUpdate() {
+  const m = Math.round(counters.m); $('#cnt-time').textContent = m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+  $('#cnt-claims').textContent = Math.round(counters.c);
+} }, T6 + 1.0);
+tl.to('#s6-popup', { y: -14, duration: 1.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, T6 + 1.0);
+wipe(T6 + 4.2, '#s6', '#s7');
+
+// 7. outro ------------------------------------------------------------------------
+const T7 = T6 + 4.9;
+tl.from('#s7-logo', { scale: .3, opacity: 0, duration: 1.0, ease: 'back.out(1.8)' }, T7 + .1);
+tl.from(split($('#s7-a'), 'w'), { y: 70, opacity: 0, duration: .6, stagger: .1 }, T7 + .7);
+tl.from(split($('#s7-b'), 'w'), { y: 70, opacity: 0, duration: .6, stagger: .1 }, T7 + 1.3);
+tl.to('#fade', { opacity: 1, duration: .9, ease: 'none' }, T7 + 4.1);
+window.DURATION = T7 + 5.0;
+
+// draw one frame at time t (seconds): the timeline plus the time-driven bits
+window.renderAt = (t) => {
+  tl.seek(t, false);
+  $$('.sprite').forEach(s => { s.style.backgroundPosition = `${spriteFrame(s.dataset.mode, t) * 100 / 3}% 0`; });
+  floaters.forEach(f => { f.el.style.transform = `translateY(${Math.sin(t * f.speed + f.phase) * f.amp}px) rotate(${Math.sin(t * f.speed * .7 + f.phase) * 18}deg)`; });
+};
+window.renderAt(0);
+</script>
+</body></html>
